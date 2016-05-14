@@ -1,6 +1,6 @@
 # FireCrasher
 
-FireCrasher is designed to handle the Uncaught Exceptions on the android application and helpe recover from the Exception 
+FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
 Without exiting from the application.
 
 # Usage :
