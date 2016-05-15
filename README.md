@@ -37,7 +37,7 @@ public class app extends Application {
 
 #### Let me know!
 
-I’d be really happy if you sent me links to your projects where you use our component. Just send an email to osama.s.raddad@gmail.com And do let me know if you have any questions or suggestion regarding the library. 
+I’d be really happy if you sent me links to your projects where you use my library. Just send an email to osama.s.raddad@gmail.com And do let me know if you have any questions or suggestion regarding the library. 
 
 ## License
 
