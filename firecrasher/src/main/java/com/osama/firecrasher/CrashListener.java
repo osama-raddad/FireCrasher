@@ -8,11 +8,9 @@ import android.app.Activity;
 public abstract class CrashListener {
     public abstract void onCrash(Throwable throwable, Activity activity);
 
-    protected void recover(RecoverListener recoverListener) {
-        recoverListener.OnRecover();
+    public void recover(Activity activity) {
+        FireCrasher.recover(activity);
     }
 
-    protected interface RecoverListener {
-        void OnRecover();
-    }
+
 }

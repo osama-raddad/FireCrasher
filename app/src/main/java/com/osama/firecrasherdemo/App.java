@@ -16,9 +16,13 @@ public class App extends Application {
         FireCrasher.install(this, new CrashListener() {
 
             @Override
-            public void onCrash(Throwable throwable, Activity activity) {
-                Toast.makeText(activity,throwable.getMessage(),Toast.LENGTH_SHORT).show();
-                //you need to your crash reporting tool here
+            public void onCrash(Throwable throwable, final Activity activity) {
+                Toast.makeText(activity, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+
+//                start the recovering process
+                recover(activity);
+
+                //you need to add your crash reporting tool here
                 //Ex: Crashlytics.logException(throwable);
             }
         });
