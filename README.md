@@ -13,27 +13,52 @@ Min SDK version 14
 ```groovy
 dependencies {
 ...
-compile 'com.osama.firecrasher:firecrasher:0.9'
+compile 'com.osama.firecrasher:firecrasher:1.0'
 }
 ```
 
 ##Usage
 
-to use the library add this code to Application class
+to use the library add this code to Application class :
 
 ```java
 public class app extends Application {
     @Override
     public void onCreate() {
-        super.onCreate();
         FireCrasher.install(this);
+        super.onCreate();
     }
 }
 ```
 
-### Version: 0.9
+or you can use your one logic, For example :
 
-  * Initial Build
+```java
+public class App extends Application {
+    @Override
+    public void onCreate() {
+        FireCrasher.install(this, new CrashListener() {
+
+            @Override
+            public void onCrash(Throwable throwable, final Activity activity) {
+                Toast.makeText(activity, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+
+                // start the recovering process
+                recover(activity);
+
+                //you need to add your crash reporting tool here
+                //Ex: Crashlytics.logException(throwable);
+            }
+        });
+        super.onCreate();
+    }
+}
+```
+
+### Version: 1.0
+
+  * fix some bugs
+  * add custom crash Listener
 
 #### Let me know!
 
