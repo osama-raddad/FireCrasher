@@ -9,16 +9,6 @@ you need to add this lines to your `build.gradle`
 
 
 ```
-repositories {
-    maven {
-        url 'https://dl.bintray.com/osama-raddad/maven/'
-    }
-}
-```
-
-and
-
-```
 dependencies {
 ...
 compile 'com.osama.firecrasher:firecrasher:0.9'
