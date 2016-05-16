@@ -15,51 +15,30 @@ import java.lang.reflect.Method;
  */
 
 
-public class SafeLooper  implements Runnable {
+public class FireLooper implements Runnable {
     private static final Object EXIT = new Object();
-    private static final ThreadLocal<SafeLooper> RUNNINGS = new ThreadLocal<>();
+    private static final ThreadLocal<FireLooper> RUNNINGS = new ThreadLocal<>();
     private static Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
     private static Handler handler = new Handler(Looper.getMainLooper());
 
-    /**
-     * Install SafeLooper in the main thread
-     * <p>
-     * Notice the action will take effect in the next event loop
-     */
     public static void install() {
         handler.removeMessages(0, EXIT);
-        handler.post(new SafeLooper());
+        handler.post(new FireLooper());
     }
 
-    /**
-     * Exit SafeLooper after millis in the main thread
-     * <p>
-     * Notice the action will take effect in the next event loop
-     */
     public static void uninstallDelay(long millis) {
         handler.removeMessages(0, EXIT);
         handler.sendMessageDelayed(handler.obtainMessage(0, EXIT), millis);
     }
 
-    /**
-     * Exit SafeLooper in the main thread
-     * <p>
-     * Notice the action will take effect in the next event loop
-     */
     public static void uninstall() {
         uninstallDelay(0);
     }
 
-    /**
-     * Tell if the SafeLooper is running in the current thread
-     */
     public static boolean isSafe() {
         return RUNNINGS.get() != null;
     }
 
-    /**
-     * The same as Thread.setDefaultUncaughtExceptionHandler
-     */
     public static void setUncaughtExceptionHandler(
             Thread.UncaughtExceptionHandler h) {
         uncaughtExceptionHandler = h;
@@ -95,7 +74,9 @@ public class SafeLooper  implements Runnable {
                     break;
 
                 Handler h = (Handler) target.get(msg);
-                h.dispatchMessage(msg);
+                    h.dispatchMessage(msg);
+
+
                 final long newIdent = Binder.clearCallingIdentity();
                 if (newIdent != ident) {
                 }
@@ -112,7 +93,7 @@ public class SafeLooper  implements Runnable {
                         ex = e;
                     }
                 }
-                // e.printStackTrace(System.err);
+
                 if (h != null) {
                     h.uncaughtException(Thread.currentThread(), ex);
                 }
