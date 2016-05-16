@@ -7,7 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
 /**
- * Created by Osama Rsaddad.
+ * Created by Osama Raddad.
  */
 public class FireCrasher {
     public static void install(Application application) {

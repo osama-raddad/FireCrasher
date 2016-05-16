@@ -8,7 +8,7 @@ import com.osama.firecrasher.CrashListener;
 import com.osama.firecrasher.FireCrasher;
 
 /**
- * Created by Osama Rsaddad.
+ * Created by Osama Raddad.
  */
 public class App extends Application {
     @Override

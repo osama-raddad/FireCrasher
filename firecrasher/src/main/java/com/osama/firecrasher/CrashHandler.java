@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 /**
- * Created by Osama Rsaddad.
+ * Created by Osama Raddad.
  */
 public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     private Activity activity;
