@@ -1,3 +1,6 @@
+
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599)
+
 # FireCrasher
 
 FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
@@ -31,7 +34,7 @@ public class app extends Application {
 }
 ```
 
-or you can use your one logic, For example :
+or you can use your logic, For example :
 
 ```java
 public class App extends Application {
