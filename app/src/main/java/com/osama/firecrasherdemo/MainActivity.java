@@ -12,8 +12,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
-    public void crash(View view) {
-        View v = view.findViewWithTag("osama");
-        v.setVisibility(View.VISIBLE);
+    public void crash(View view) throws Exception {
+        throw new Exception();
     }
 }
