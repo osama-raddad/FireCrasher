@@ -4,7 +4,7 @@
 
 <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"></img></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"></img></a>
 
-#### FireCrasher
+# FireCrasher
 
 FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
 Without exiting from the application.
@@ -61,12 +61,12 @@ public class App extends Application {
 }
 ```
 
-### Version: 1.0
+## Version: 1.0
 
   * fix some bugs
   * add custom crash Listener
 
-#### Let me know!
+### Let me know!
 
 I’d be really happy if you sent me links to your projects where you use my library. Just send an email to osama.s.raddad@gmail.com And do let me know if you have any questions or suggestion regarding the library. 
 
