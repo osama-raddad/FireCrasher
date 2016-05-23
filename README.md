@@ -85,3 +85,7 @@ I’d be really happy if you sent me links to your projects where you use my lib
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/osama-raddad/firecrasher/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
