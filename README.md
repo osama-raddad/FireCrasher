@@ -3,9 +3,8 @@
 [![License Apache](https://img.shields.io/badge/license-Apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"></img></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"></img></a>
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/osama-raddad/firecrasher/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
-# FireCrasher
+#### FireCrasher
 
 FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
 Without exiting from the application.
