@@ -46,7 +46,7 @@ public class FireCrasher {
                     activity.onBackPressed();
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+                Log.e("FireCrasher",e.getMessage());
             }
     }
 
