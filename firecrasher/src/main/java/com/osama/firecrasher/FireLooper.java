@@ -77,13 +77,28 @@ public class FireLooper implements Runnable {
                     h.dispatchMessage(msg);
 
 
-                final long newIdent = Binder.clearCallingIdentity();
+                Binder.clearCallingIdentity();
 
                 int currentapiVersion = android.os.Build.VERSION.SDK_INT;
                 if (currentapiVersion < android.os.Build.VERSION_CODES.LOLLIPOP){
                     msg.recycle();
                 }
-            } catch (Exception e) {
+            } catch (InvocationTargetException e) {
+                Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
+                Throwable ex = e;
+                if (e instanceof InvocationTargetException) {
+                    ex = e.getCause();
+                    if (ex == null) {
+                        ex = e;
+                    }
+                }
+
+                if (h != null) {
+                    h.uncaughtException(Thread.currentThread(), ex);
+                }
+                new Handler().post(this);
+                break;
+            }catch (Exception e) {
                 Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
                 Throwable ex = e;
                 if (e instanceof InvocationTargetException) {
