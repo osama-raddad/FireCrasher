@@ -86,13 +86,11 @@ public class FireLooper implements Runnable {
             } catch (InvocationTargetException e) {
                 Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
                 Throwable ex = e;
-                if (e instanceof InvocationTargetException) {
                     ex = e.getCause();
                     if (ex == null) {
                         ex = e;
                     }
-                }
-
+                
                 if (h != null) {
                     h.uncaughtException(Thread.currentThread(), ex);
                 }
@@ -101,12 +99,6 @@ public class FireLooper implements Runnable {
             }catch (Exception e) {
                 Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
                 Throwable ex = e;
-                if (e instanceof InvocationTargetException) {
-                    ex = e.getCause();
-                    if (ex == null) {
-                        ex = e;
-                    }
-                }
 
                 if (h != null) {
                     h.uncaughtException(Thread.currentThread(), ex);
