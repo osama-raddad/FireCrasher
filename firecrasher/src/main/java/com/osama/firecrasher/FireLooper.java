@@ -78,8 +78,7 @@ public class FireLooper implements Runnable {
 
 
                 final long newIdent = Binder.clearCallingIdentity();
-                if (newIdent != ident) {
-                }
+
                 int currentapiVersion = android.os.Build.VERSION.SDK_INT;
                 if (currentapiVersion < android.os.Build.VERSION_CODES.LOLLIPOP){
                     msg.recycle();
