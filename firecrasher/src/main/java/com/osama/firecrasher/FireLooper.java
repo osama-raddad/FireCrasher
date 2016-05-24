@@ -65,8 +65,7 @@ public class FireLooper implements Runnable {
         RUNNINGS.set(this);
         MessageQueue queue = Looper.myQueue();
         Binder.clearCallingIdentity();
-        final long ident = Binder.clearCallingIdentity();
-
+        
         while (true) {
             try {
                 Message msg = (Message) next.invoke(queue);
