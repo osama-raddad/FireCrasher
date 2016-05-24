@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'jacoco-everywhere'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
@@ -10,11 +10,15 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            testCoverageEnabled true
         }
     }
 }
@@ -24,4 +28,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile project(':firecrasher')
+    androidTestCompile 'com.android.support:support-annotations:23.2.1'
+    androidTestCompile 'com.android.support.test:runner:0.5'
 }

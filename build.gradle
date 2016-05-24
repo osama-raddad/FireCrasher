@@ -8,6 +8,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+        classpath 'com.trickyandroid:jacoco-everywhere:0.2.1'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -16,6 +17,80 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+    }
+}
+
+project.ext.preDexLibs = !project.hasProperty('disablePreDex')
+
+subprojects {
+    project.plugins.whenPluginAdded {plugin ->
+        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        }
+    }
+}
+
+subprojects {project ->
+    apply plugin: 'checkstyle'
+    apply plugin: 'findbugs'
+    apply plugin: 'pmd'
+
+    checkstyle {
+        toolVersion = '6.15'
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+        ignoreFailures false
+        showViolations true
+    }
+
+    task checkstyle(type: Checkstyle) {
+        source 'src'
+        include '**/*.java'
+        exclude '**/gen/**'
+        classpath = files()
+    }
+
+    findbugs {
+        effort = 'max'
+        excludeFilter = rootProject.file('config/findbugs/exclude.xml')
+        ignoreFailures = false
+        reportLevel = 'low'
+        reportsDir = project.file('build/reports/findbugs')
+        toolVersion '3.0.1'
+    }
+
+    task findbugs(type: FindBugs) {
+        classes = files("${project.buildDir}/intermediates/classes")
+        classpath = files()
+        reports {
+            html.enabled = true
+            xml.enabled = false
+        }
+        source = 'src'
+    }
+
+    pmd {
+        consoleOutput true
+        ignoreFailures false
+        reportsDir = project.file('build/reports/pmd')
+        toolVersion '5.4.1'
+    }
+
+    task pmd(type: Pmd) {
+        include '**/*.java'
+        ruleSetFiles = files("${project.rootDir}/config/pmd/ruleset.xml")
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+        source 'src'
+    }
+
+    afterEvaluate {
+        if (project.tasks.findByName('check')) {
+            check.dependsOn 'checkstyle', 'findbugs', 'pmd'
+        }
     }
 }
 
