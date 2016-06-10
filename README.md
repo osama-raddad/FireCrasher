@@ -45,6 +45,8 @@ public class App extends Application {
 
             @Override
             public void onCrash(Throwable throwable, final Activity activity) {
+            
+                // show your own message
                 Toast.makeText(activity, throwable.getMessage(), Toast.LENGTH_SHORT).show();
 
                 // start the recovering process
