@@ -18,8 +18,8 @@ Min SDK version 14
 
 ```groovy
 dependencies {
-...
-compile 'com.osama.firecrasher:firecrasher:1.0'
+    ...
+    compile 'com.osama.firecrasher:firecrasher:1.0'
 }
 ```
 
