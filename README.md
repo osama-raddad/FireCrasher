@@ -14,13 +14,23 @@ Without exiting from the application.
 Min SDK version 14
 
 
-##Installing with [Gradle](http://gradle.org/)
+##Install
+Add it in your root build.gradle at the end of repositories:
 
-```groovy
-dependencies {
-    ...
-    compile 'com.osama.firecrasher:firecrasher:1.0'
-}
+```js
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+Step 2. Add the dependency
+
+```js
+	dependencies {
+	        compile 'com.github.osama-raddad:FireCrasher:v1.0'
+	}
 ```
 
 ##Usage
