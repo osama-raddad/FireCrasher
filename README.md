@@ -9,12 +9,12 @@
 FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
 Without exiting from the application.
 
-##Requirements
+## Requirements
 
 Min SDK version 14
 
 
-##Install
+## Install
 Add it in your root build.gradle at the end of repositories:
 
 ```js
@@ -33,7 +33,7 @@ Step 2. Add the dependency
 	}
 ```
 
-##Usage
+## Usage
 
 to use the library add this code to Application class :
 
