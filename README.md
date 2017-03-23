@@ -73,12 +73,12 @@ public class App extends Application {
 }
 ```
 
-## Version: 1.1
+## Version: [1.1](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.1)
 
   * add Java8 support
   * fix some bugs
 
-## Version: 1.0
+## Version: [1.0](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.0)
 
   * fix some bugs
   * add custom crash Listener
