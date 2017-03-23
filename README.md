@@ -73,6 +73,11 @@ public class App extends Application {
 }
 ```
 
+## Version: 1.1
+
+  * add Java8 support
+  * fix some bugs
+
 ## Version: 1.0
 
   * fix some bugs
