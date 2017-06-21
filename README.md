@@ -76,7 +76,7 @@ public class App extends Application {
 ## Contributing
 
 We welcome contributions to FireCrasher!
-⇄ Pull requests and ★ Stars are always welcome.
+* ⇄ Pull requests and ★ Stars are always welcome.
 
 ## Version: [1.1](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.1)
 
