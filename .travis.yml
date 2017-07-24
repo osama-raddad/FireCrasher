@@ -34,9 +34,6 @@ env:
 
 before_script:
   - chmod +x gradlew
-  - sudo apt-get install tree
-  - sudo apt-get update
-  - tree
 
 script:
   - ./gradlew assembleDebug
