@@ -21,6 +21,8 @@ before_script:
   - chmod +x gradlew
 
 script:
+  - ./gradlew clean --stacktrace
+  - ./gradlew assemble --stacktrace
   - ./gradlew assembleRelease --stacktrace
 checkout:
   post:
