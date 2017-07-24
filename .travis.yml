@@ -20,7 +20,7 @@ install: true
 before_script:
   - chmod +x gradlew
   - sudo apt-get install tree
-  - apt-get update
+  - sudo apt-get update
   - tree
 
 script:
