@@ -17,16 +17,26 @@ jdk:
 
 install: true
 
+cache:
+  apt: true
+  directories:
+    - ${TRAVIS_BUILD_DIR}/gradle/caches/
+    - ${TRAVIS_BUILD_DIR}/gradle/wrapper/dists/
+    - ${TRAVIS_BUILD_DIR}/android-sdk/extras/
+
+env:
+  global:
+    - GRADLE_USER_HOME=${TRAVIS_BUILD_DIR}/gradle
+    - ANDROID_HOME=${TRAVIS_BUILD_DIR}/android-sdk
+    - SDK=${TRAVIS_BUILD_DIR}/android-sdk
+    - PATH=${GRADLE_USER_HOME}/bin/:${SDK}/:${SDK}/tools/:${SDK}/platform-tools/:${PATH}
+
+
 before_script:
   - chmod +x gradlew
   - sudo apt-get install tree
   - sudo apt-get update
-  - tree ~
+  - tree
 
 script:
-  - ./gradlew clean --stacktrace
   - ./gradlew assemble --stacktrace
-  - ./gradlew assembleRelease --stacktrace
-checkout:
-  post:
-    - cp local.properties.ci local.properties
