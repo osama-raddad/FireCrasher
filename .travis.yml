@@ -39,4 +39,4 @@ before_script:
   - tree
 
 script:
-  - ./gradlew assemble --stacktrace
+  - ./gradlew assembleDebug
