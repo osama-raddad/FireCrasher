@@ -19,7 +19,9 @@ install: true
 
 before_script:
   - chmod +x gradlew
-  - cat /etc/issue.net
+  - sudo apt-get install tree
+  - apt-get update
+  - tree
 
 script:
   - ./gradlew clean --stacktrace
