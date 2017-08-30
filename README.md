@@ -4,6 +4,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22)](https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade) <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"></img></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"></img></a> [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher)
 
+<a href='https://ko-fi.com/A4763RZL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 # FireCrasher
 
 FireCrasher is designed to handle the Uncaught Exceptions on the android application and help recover from the Exception 
