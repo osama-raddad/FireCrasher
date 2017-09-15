@@ -1,7 +1,5 @@
 sudo: required
-dist: trusty
 language: android
-group: edge
 jdk:
 - oraclejdk7
 before_cache:
