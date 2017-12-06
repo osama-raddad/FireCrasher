@@ -7,16 +7,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 
-/**
- * Created by Osama Raddad.
- */
 public final class CrashHandler implements Thread.UncaughtExceptionHandler {
   private Activity activity;
   private Application.ActivityLifecycleCallbacks lifecycleCallbacks;
   private CrashListener crashListener;
   private CrashInterface crashInterface;
 
-  public CrashHandler() {
+  CrashHandler() {
     lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
       @Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
         CrashHandler.this.activity = activity;
@@ -48,11 +45,11 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     };
   }
 
-  public void setCrashListener(CrashListener crashListener) {
+  void setCrashListener(CrashListener crashListener) {
     this.crashListener = crashListener;
   }
 
-  public void setCrashInterface(CrashInterface crashListener) {
+  void setCrashInterface(CrashInterface crashListener) {
     this.crashInterface = crashListener;
   }
 
@@ -81,7 +78,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     Log.e("FireCrasher.err", thread.getName(), throwable);
   }
 
-  public Application.ActivityLifecycleCallbacks getLifecycleCallbacks() {
+  Application.ActivityLifecycleCallbacks getLifecycleCallbacks() {
     return lifecycleCallbacks;
   }
 }

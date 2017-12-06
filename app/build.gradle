@@ -8,8 +8,8 @@ android {
         applicationId "com.osama.firecrasherdemo"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 2
-        versionName "1.4"
+        versionCode 3
+        versionName "1.5"
     }
     buildTypes {
         release {
@@ -19,6 +19,11 @@ android {
         debug {
             testCoverageEnabled true
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

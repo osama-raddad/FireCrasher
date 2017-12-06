@@ -1,5 +1,6 @@
 package com.osama.firecrasher;
 
+import android.annotation.SuppressLint;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,103 +11,88 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-/**
- * Created by osama.
- */
-
-
 public class FireLooper implements Runnable {
-    private static final Object EXIT = new Object();
-    private static final ThreadLocal<FireLooper> RUNNINGS = new ThreadLocal<>();
+    private static Object EXIT;
+    private static ThreadLocal<FireLooper> FIRE_LOOPER_THREAD_LOCAL;
     private static Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
-    private static Handler handler = new Handler(Looper.getMainLooper());
+    private static Handler handler;
 
-    public static void install() {
+    static {
+        EXIT = new Object();
+        FIRE_LOOPER_THREAD_LOCAL = new ThreadLocal<>();
+        handler = new Handler(Looper.getMainLooper());
+    }
+
+    static void install() {
         handler.removeMessages(0, EXIT);
         handler.post(new FireLooper());
     }
 
-    public static void uninstallDelay(long millis) {
-        handler.removeMessages(0, EXIT);
-        handler.sendMessageDelayed(handler.obtainMessage(0, EXIT), millis);
+    static boolean isSafe() {
+        return FIRE_LOOPER_THREAD_LOCAL.get() != null;
     }
 
-    public static void uninstall() {
-        uninstallDelay(0);
-    }
-
-    public static boolean isSafe() {
-        return RUNNINGS.get() != null;
-    }
-
-    public static void setUncaughtExceptionHandler(
+    static void setUncaughtExceptionHandler(
             Thread.UncaughtExceptionHandler h) {
         uncaughtExceptionHandler = h;
     }
 
     @Override
     public void run() {
-        if (RUNNINGS.get() != null)
+        if (FIRE_LOOPER_THREAD_LOCAL.get() != null)
             return;
 
         Method next;
         Field target;
         try {
-            Method m = MessageQueue.class.getDeclaredMethod("next");
-            m.setAccessible(true);
-            next = m;
-            Field f = Message.class.getDeclaredField("target");
-            f.setAccessible(true);
-            target = f;
+            @SuppressLint("PrivateApi") Method method = MessageQueue.class.getDeclaredMethod("next");
+            method.setAccessible(true);
+            next = method;
+            Field field = Message.class.getDeclaredField("target");
+            field.setAccessible(true);
+            target = field;
         } catch (Exception e) {
             return;
         }
 
-        RUNNINGS.set(this);
+        FIRE_LOOPER_THREAD_LOCAL.set(this);
         MessageQueue queue = Looper.myQueue();
         Binder.clearCallingIdentity();
-        
+
         while (true) {
             try {
-                Message msg = (Message) next.invoke(queue);
-                if (msg == null || msg.obj == EXIT)
+                Message message = (Message) next.invoke(queue);
+                if (message == null || message.obj == EXIT)
                     break;
 
-                Handler h = (Handler) target.get(msg);
-                    h.dispatchMessage(msg);
-
+                Handler handler = (Handler) target.get(message);
+                handler.dispatchMessage(message);
 
                 Binder.clearCallingIdentity();
 
-                int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-                if (currentapiVersion < android.os.Build.VERSION_CODES.LOLLIPOP){
-                    msg.recycle();
-                }
-            } catch (InvocationTargetException e) {
-                Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
-                Throwable ex = e;
-                    ex = e.getCause();
-                    if (ex == null) {
-                        ex = e;
-                    }
-                
-                if (h != null) {
-                    h.uncaughtException(Thread.currentThread(), ex);
-                }
+                int currentVersion = android.os.Build.VERSION.SDK_INT;
+                if (currentVersion < android.os.Build.VERSION_CODES.LOLLIPOP)
+                    message.recycle();
+            } catch (InvocationTargetException exception) {
+                Thread.UncaughtExceptionHandler exceptionHandler = uncaughtExceptionHandler;
+                Throwable throwable;
+                throwable = exception.getCause();
+                if (throwable == null) throwable = exception;
+
+                if (exceptionHandler != null) exceptionHandler
+                        .uncaughtException(Thread.currentThread(), throwable);
+
                 new Handler().post(this);
                 break;
-            }catch (Exception e) {
-                Thread.UncaughtExceptionHandler h = uncaughtExceptionHandler;
-                Throwable ex = e;
-
-                if (h != null) {
-                    h.uncaughtException(Thread.currentThread(), ex);
-                }
+            } catch (Exception e) {
+                Thread.UncaughtExceptionHandler exceptionHandler = uncaughtExceptionHandler;
+                if (exceptionHandler != null)
+                    exceptionHandler.uncaughtException(Thread.currentThread(), e);
                 new Handler().post(this);
                 break;
             }
         }
 
-        RUNNINGS.set(null);
+        FIRE_LOOPER_THREAD_LOCAL.set(null);
     }
 }

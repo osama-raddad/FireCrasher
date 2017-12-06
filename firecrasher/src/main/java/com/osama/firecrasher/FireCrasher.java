@@ -7,9 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-/**
- * Created by Osama Raddad.
- */
+
 public class FireCrasher {
   public static void install(Application application) {
     if (!FireLooper.isSafe()) {
@@ -43,7 +41,7 @@ public class FireCrasher {
     }
   }
 
-  protected static void recover(Activity activity) {
+  static void recover(Activity activity) {
     if (activity != null) {
       try {
         ActivityInfo[] list = activity.getPackageManager()
