@@ -31,7 +31,7 @@ Step 2. Add the dependency
 
 ```js
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:v1.5'
+	        implementation 'com.github.osama-raddad:FireCrasher:1.5.1'
 	}
 ```
 
