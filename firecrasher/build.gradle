@@ -31,26 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 3
-        versionName "1.5"
-    }
-    buildTypes {
-        release {
-            minifyEnabled true
-            zipAlignEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'),
-                    'proguard-rules.pro'
-        }
-
-        debug {
-            jniDebuggable true
-            renderscriptDebuggable true
-            minifyEnabled true
-            zipAlignEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'),
-                    'proguard-rules.pro',
-                    'proguard-rules-debug.pro'
-        }
+        versionCode 4
+        versionName "1.5.1"
     }
 
     compileOptions {
