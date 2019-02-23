@@ -54,25 +54,21 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
   }
 
   @Override public void uncaughtException(Thread thread, final Throwable throwable) {
-    activity.runOnUiThread(new Runnable() {
-      public void run() {
-        if (crashListener != null) {
-          crashListener.onCrash(throwable, activity);
-        } else if (crashInterface != null) {
-          crashInterface.onCrash(throwable, activity);
-        } else {
-          AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-          alertDialog.setTitle("Crash");
-          alertDialog.setMessage(throwable.getMessage());
-          alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Recover",
-              new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+    activity.runOnUiThread(() -> {
+      if (crashListener != null) {
+        crashListener.onCrash(throwable, activity);
+      } else if (crashInterface != null) {
+        crashInterface.onCrash(throwable, activity);
+      } else {
+        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setTitle("Crash");
+        alertDialog.setMessage(throwable.getMessage());
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Recover",
+                (dialog, which) -> {
                   dialog.dismiss();
-                  FireCrasher.recover(activity);
-                }
-              });
-          alertDialog.show();
-        }
+                  FireCrasher.INSTANCE.recover(activity);
+                });
+        alertDialog.show();
       }
     });
     Log.e("FireCrasher.err", thread.getName(), throwable);

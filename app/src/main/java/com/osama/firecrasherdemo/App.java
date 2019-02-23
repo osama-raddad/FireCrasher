@@ -13,7 +13,7 @@ import com.osama.firecrasher.FireCrasher;
 public class App extends Application {
     @Override
     public void onCreate() {
-        FireCrasher.install(this, new CrashListener() {
+        FireCrasher.INSTANCE.install(this, new CrashListener() {
 
             @Override
             public void onCrash(Throwable throwable, final Activity activity) {

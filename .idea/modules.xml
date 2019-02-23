@@ -2,12 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/FireCrasher.iml" filepath="$PROJECT_DIR$/.idea/FireCrasher.iml" />
       <module fileurl="file://$PROJECT_DIR$/FireCrasher.iml" filepath="$PROJECT_DIR$/FireCrasher.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FireCrasher.iml" filepath="$PROJECT_DIR$/.idea/FireCrasher.iml" />
       <module fileurl="file://$PROJECT_DIR$/FireCrasher3.iml" filepath="$PROJECT_DIR$/FireCrasher3.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/firecrasher/firecrasher.iml" filepath="$PROJECT_DIR$/firecrasher/firecrasher.iml" />
       <module fileurl="file://$PROJECT_DIR$/firecrasher/firecrasher.iml" filepath="$PROJECT_DIR$/firecrasher/firecrasher.iml" />
     </modules>
   </component>
