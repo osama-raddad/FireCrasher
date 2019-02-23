@@ -19,7 +19,7 @@ Min SDK version 14
 ## Install
 Add it in your root build.gradle at the end of repositories:
 
-```js
+```groove
 	allprojects {
 		repositories {
 			...
@@ -29,7 +29,7 @@ Add it in your root build.gradle at the end of repositories:
 ```
 Step 2. Add the dependency
 
-```js
+```groove
 	dependencies {
 	        implementation 'com.github.osama-raddad:FireCrasher:1.5.2'
 	}
@@ -39,38 +39,32 @@ Step 2. Add the dependency
 
 to use the library add this code to Application class :
 
-```java
-public class app extends Application {
-    @Override
-    public void onCreate() {
-        FireCrasher.install(this);
-        super.onCreate();
+```kotlin
+class App : Application() {
+    override fun onCreate() {
+        super.onCreate()
+	FireCrasher.install(this);
     }
 }
 ```
 
 or you can use your logic, For example :
 
-```java
-public class App extends Application {
-    @Override
-    public void onCreate() {
-        FireCrasher.install(this, new CrashListener() {
+```kotlin
+class App : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        FireCrasher.install(this, object : CrashListener() {
 
-            @Override
-            public void onCrash(Throwable throwable, final Activity activity) {
-            
-                // show your own message
-                Toast.makeText(activity, throwable.getMessage(), Toast.LENGTH_SHORT).show();
-
+            override fun onCrash(throwable: Throwable, activity: Activity) {
+                Toast.makeText(activity, throwable.message, Toast.LENGTH_SHORT).show()
                 // start the recovering process
-                recover(activity);
+                recover(activity)
 
                 //you need to add your crash reporting tool here
                 //Ex: Crashlytics.logException(throwable);
             }
-        });
-        super.onCreate();
+        })
     }
 }
 ```
@@ -96,7 +90,7 @@ I’d be really happy if you sent me links to your projects where you use my lib
 
 ## License
 
-    Copyright 2016, Osama Raddad
+    Copyright 2019, Osama Raddad
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
