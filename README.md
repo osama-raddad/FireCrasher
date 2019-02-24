@@ -8,7 +8,7 @@
 
 # FireCrasher
 
-FireCrasher is designed to handle the uncaught exceptions RECOVER process from the Exception 
+FireCrasher is designed to handle the uncaught exceptions RECOVERY process from the Exception 
 Without exiting from the application.
 
 ## Requirements
