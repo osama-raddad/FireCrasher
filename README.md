@@ -31,7 +31,7 @@ Step 2. Add the dependency
 
 ```groove
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:1.5.2'
+	        implementation 'com.github.osama-raddad:FireCrasher:1.5.3'
 	}
 ```
 
@@ -73,6 +73,11 @@ class App : Application() {
 
 We welcome contributions to FireCrasher!
 * ⇄ Pull requests and ★ Stars are always welcome.
+
+## Version: [1.5.3](https://github.com/osama-raddad/FireCrasher/releases/tag/1.5.3)
+
+  * refactor the library
+  * fix some bugs
 
 ## Version: [1.1](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.1)
 
