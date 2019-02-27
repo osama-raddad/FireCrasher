@@ -93,12 +93,8 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         ActivityManager m = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> runningTaskInfoList = m.getRunningTasks(10);
         int numOfActivities = 0;
-        for (ActivityManager.RunningTaskInfo runningTaskInfo : runningTaskInfoList) {
-            int id = runningTaskInfo.id;
-            CharSequence desc = runningTaskInfo.description;
-            numOfActivities = runningTaskInfo.numActivities;
-            String topActivity = runningTaskInfo.topActivity.getShortClassName();
-        }
+        if (runningTaskInfoList.size() >= 1)
+            numOfActivities = runningTaskInfoList.get(0).numActivities;
         return numOfActivities <= 0 ? 0 : numOfActivities - 1;
     }
 }
