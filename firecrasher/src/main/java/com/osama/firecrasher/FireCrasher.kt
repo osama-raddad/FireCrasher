@@ -56,9 +56,15 @@ object FireCrasher {
                     activity.onBackPressed()
                 }
             } else {
-                //no activates to go back to so just restart the app
-                restartApp(activity)
-                activity.finish()
+                try {
+                    //try to restart the failing activity
+                    activity.startActivity(Intent(activity, activity.javaClass))
+                    activity.finish()
+                } catch (e: Exception) {
+                    //no activates to go back to so just restart the app
+                    restartApp(activity)
+                    activity.finish()
+                }
             }
         }
     }
