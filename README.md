@@ -8,8 +8,16 @@
 
 # FireCrasher
 
-FireCrasher is designed to handle the uncaught exceptions RECOVERY process from the Exception 
+FireCrasher is designed to handle the uncaught exceptions and utilize a RECOVERY process from the Exception 
 Without exiting from the application.
+
+# The Problem 
+
+"The study, carried out online by uSamp, found that freezing (76%), crashing (71%) and slow responsiveness (59%) were the primary bugbears when it came to app problems, with heavy battery usage (55%) and too many ads (53%) also mentioned. Users stressed that performance mattered the most on banking apps (74%) and maps (63%), with the latter no doubt much to the chagrin of Apple, which has had some difficulty with its own maps software on iOS 6. For almost every respondent (96%) said that they would write a bad review on an under-par app, while 44% said that they would delete the app immediately. Another 38% said that they would delete the app if it froze for more than 30 seconds with 32% and 21% respectively indicating that they would moan about the app to their friends or colleagues in person or over Facebook and Twitter. A considerable 18% would delete an app immediately if it froze for just five seconds, but 27% said that they would persist with the app if they paid for it. Those experiencing bad apps urged developers to fix the problem (89%) first and foremost, followed by offering easy refunds (65%) and a customer service number (49%)."
+
+# The Solution
+
+Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) so you will risk losing a 44% of the affected users, this where Firecrasher comes in; it works without losing any crash report, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels: the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity.
 
 ## Requirements
 
@@ -73,25 +81,6 @@ class App : Application() {
 
 We welcome contributions to FireCrasher!
 * ⇄ Pull requests and ★ Stars are always welcome.
-
-## Version: [1.5.4](https://github.com/osama-raddad/FireCrasher/releases/tag/1.5.3)
-
-  * fix backstack bug
-
-## Version: [1.5.3](https://github.com/osama-raddad/FireCrasher/releases/tag/1.5.3)
-
-  * refactor the library
-  * fix some bugs
-
-## Version: [1.1](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.1)
-
-  * add Java8 support
-  * fix some bugs
-
-## Version: [1.0](https://github.com/osama-raddad/FireCrasher/releases/tag/v1.0)
-
-  * fix some bugs
-  * add custom crash Listener
 
 ### Let me know!
 
