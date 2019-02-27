@@ -46,10 +46,13 @@ object FireCrasher {
 
     fun recover(activity: Activity?) {
         if (activity != null) {
+            val intent = Intent(activity, activity.javaClass)
+            activity.overridePendingTransition(0, 0);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
             if (getBackStackCount(activity) >= 1) {
                 //try to restart the failing activity
                 try {
-                    activity.startActivity(Intent(activity, activity.javaClass))
+                    activity.startActivity(intent)
                     activity.finish()
                 } catch (e: Exception) {
                     //failure in restarting the activity try to go back
@@ -58,7 +61,7 @@ object FireCrasher {
             } else {
                 try {
                     //try to restart the failing activity
-                    activity.startActivity(Intent(activity, activity.javaClass))
+                    activity.startActivity(intent)
                     activity.finish()
                 } catch (e: Exception) {
                     //no activates to go back to so just restart the app
