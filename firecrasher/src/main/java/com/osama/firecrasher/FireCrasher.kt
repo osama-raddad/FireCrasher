@@ -3,16 +3,12 @@ package com.osama.firecrasher
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.util.Log
 import com.osama.firecrasher.CrashHandler.getBackStackCount
-import com.osama.firecrasher.CrashHandler.getRunningActivity
-import java.lang.Exception
 
 
 object FireCrasher {
-    var retryCount: Int = 0;
+    var retryCount: Int = 0
     fun install(application: Application) {
         if (!FireLooper.isSafe) {
             val crashHandler = CrashHandler()
@@ -45,39 +41,36 @@ object FireCrasher {
         }
     }
 
-    fun recover(activity: Activity?) {
-        if (activity != null) {
-            val intent = Intent(activity, activity.javaClass)
-            activity.overridePendingTransition(0, 0);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            if (getBackStackCount(activity) >= 1) {
-                //try to restart the failing activity
-                if (retryCount <= 3) {
-                    retryCount += 1
-                    Log.d(FireCrasher::class.java.simpleName, "retryCount :$retryCount")
-                    activity.startActivity(intent)
-                    activity.finish()
-                } else {
-                    retryCount = 0
-                    //failure in restarting the activity try to go back
-                    activity.onBackPressed()
-                }
+    fun recover(activity: Activity) {
+        val intent = Intent(activity, activity.javaClass)
+        activity.overridePendingTransition(0, 0)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        if (getBackStackCount(activity) >= 1) {
+            //try to restart the failing activity
+            if (retryCount <= 3) {
+                retryCount += 1
+                activity.startActivity(intent)
+                activity.finish()
             } else {
-                if (retryCount <= 3) {
-                    retryCount += 1
-                    Log.d(FireCrasher::class.java.simpleName, "retryCount :$retryCount")
-                    //try to restart the failing activity
-                    activity.startActivity(intent)
-                    activity.finish()
-                } else {
-                    retryCount = 0
-                    //no activates to go back to so just restart the app
-                    restartApp(activity)
-                    activity.finish()
-                }
+                retryCount = 0
+                //failure in restarting the activity try to go back
+                activity.onBackPressed()
+            }
+        } else {
+            if (retryCount <= 3) {
+                retryCount += 1
+                //try to restart the failing activity
+                activity.startActivity(intent)
+                activity.finish()
+            } else {
+                retryCount = 0
+                //no activates to go back to so just restart the app
+                restartApp(activity)
+                activity.finish()
             }
         }
     }
+
 
     private fun restartApp(activity: Activity) {
         val i = activity.baseContext

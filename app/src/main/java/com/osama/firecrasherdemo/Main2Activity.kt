@@ -1,9 +1,8 @@
 package com.osama.firecrasherdemo
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity;
-
+import android.os.Handler
+import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main2.*
 
 class Main2Activity : AppCompatActivity() {
@@ -12,8 +11,15 @@ class Main2Activity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
         setSupportActionBar(toolbar)
+    }
 
-        throw Exception()
+
+    override fun onResume() {
+        super.onResume()
+        Handler().postDelayed({this.runOnUiThread {
+            throw Exception("Osama ex")
+        }},5000)
+
         fab.setOnClickListener { view ->
             throw Exception()
         }

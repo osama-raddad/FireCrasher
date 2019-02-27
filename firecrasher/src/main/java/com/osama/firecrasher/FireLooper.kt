@@ -1,12 +1,7 @@
 package com.osama.firecrasher
 
 import android.annotation.SuppressLint
-import android.os.Binder
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
-import android.os.MessageQueue
-
+import android.os.*
 import java.lang.reflect.Field
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
