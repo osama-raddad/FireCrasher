@@ -74,6 +74,10 @@ class App : Application() {
 We welcome contributions to FireCrasher!
 * ⇄ Pull requests and ★ Stars are always welcome.
 
+## Version: [1.5.4](https://github.com/osama-raddad/FireCrasher/releases/tag/1.5.3)
+
+  * fix backstack bug
+
 ## Version: [1.5.3](https://github.com/osama-raddad/FireCrasher/releases/tag/1.5.3)
 
   * refactor the library
