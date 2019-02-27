@@ -8,7 +8,7 @@
 
 # FireCrasher
 
-FireCrasher is designed to handle the uncaught exceptions RECOVERY process from the Exception 
+FireCrasher is designed to handle the uncaught exceptions and utilize a RECOVERY process from the Exception 
 Without exiting from the application.
 
 # The Problem 
@@ -17,7 +17,7 @@ Without exiting from the application.
 
 # The Solution
 
-Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) so you will risk losing a 72% of the affected users, this where Firecrasher comes in; it works without losing any crash report, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels: the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity.
+Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) so you will risk losing a 44% of the affected users, this where Firecrasher comes in; it works without losing any crash report, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels: the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity.
 
 ## Requirements
 
