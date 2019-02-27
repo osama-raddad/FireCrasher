@@ -13,6 +13,7 @@ import com.osama.firecrasher.FireCrasher;
 public class App extends Application {
     @Override
     public void onCreate() {
+        super.onCreate();
         FireCrasher.INSTANCE.install(this, new CrashListener() {
 
             @Override
@@ -26,6 +27,5 @@ public class App extends Application {
                 //Ex: Crashlytics.logException(throwable);
             }
         });
-        super.onCreate();
     }
 }

@@ -6,6 +6,9 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.util.Log
+import com.osama.firecrasher.CrashHandler.getBackStackCount
+import com.osama.firecrasher.CrashHandler.getRunningActivity
+import java.lang.Exception
 
 
 object FireCrasher {
@@ -43,24 +46,30 @@ object FireCrasher {
 
     fun recover(activity: Activity?) {
         if (activity != null) {
-            try {
-                val list = activity.packageManager
-                        .getPackageInfo(activity.packageName, PackageManager.GET_ACTIVITIES).activities
-                if (list.size == 1 && list[0].name == activity.javaClass.name) {
-                    try {
-                        activity.startActivity(Intent(activity, activity.javaClass))
-                    } catch (e: Exception) {
-                        // e.printStackTrace();
-                    }
-
+            if (getBackStackCount(activity) >= 1) {
+                //try to restart the failing activity
+                try {
+                    activity.startActivity(Intent(activity, activity.javaClass))
                     activity.finish()
-                } else {
+                } catch (e: Exception) {
+                    //failure in restarting the activity try to go back
                     activity.onBackPressed()
                 }
-            } catch (e: PackageManager.NameNotFoundException) {
-                Log.e("FireCrasher", e.message)
+            } else {
+                //no activates to go back to so just restart the app
+                restartApp(activity)
+                activity.finish()
             }
+        }
+    }
 
+    private fun restartApp(activity: Activity) {
+        val i = activity.baseContext
+                .packageManager
+                .getLaunchIntentForPackage(activity.baseContext.packageName)
+        if (i != null) {
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            activity.startActivity(i)
         }
     }
 }
