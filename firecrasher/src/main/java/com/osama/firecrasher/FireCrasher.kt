@@ -12,6 +12,7 @@ import java.lang.Exception
 
 
 object FireCrasher {
+    var retryCount: Int = 0;
     fun install(application: Application) {
         if (!FireLooper.isSafe) {
             val crashHandler = CrashHandler()
@@ -51,19 +52,25 @@ object FireCrasher {
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
             if (getBackStackCount(activity) >= 1) {
                 //try to restart the failing activity
-                try {
+                if (retryCount <= 3) {
+                    retryCount += 1
+                    Log.d(FireCrasher::class.java.simpleName, "retryCount :$retryCount")
                     activity.startActivity(intent)
                     activity.finish()
-                } catch (e: Exception) {
+                } else {
+                    retryCount = 0
                     //failure in restarting the activity try to go back
                     activity.onBackPressed()
                 }
             } else {
-                try {
+                if (retryCount <= 3) {
+                    retryCount += 1
+                    Log.d(FireCrasher::class.java.simpleName, "retryCount :$retryCount")
                     //try to restart the failing activity
                     activity.startActivity(intent)
                     activity.finish()
-                } catch (e: Exception) {
+                } else {
+                    retryCount = 0
                     //no activates to go back to so just restart the app
                     restartApp(activity)
                     activity.finish()
