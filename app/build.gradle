@@ -9,8 +9,8 @@ android {
         applicationId "com.osama.firecrasherdemo"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 9
-        versionName "1.5.9"
+        versionCode 10
+        versionName "1.5.10"
     }
     buildTypes {
         release {
