@@ -17,7 +17,7 @@ Without exiting from the application.
 
 # The Solution
 
-Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) so you will risk losing a 44% of the affected users, this where Firecrasher comes in; it works without losing any crash report, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels: the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity.
+Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) thus you might risk losing a 44% of the affected users, this where Firecrasher comes in, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels; the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity. Moreover, it works without losing any crash reports.
 
 ## Requirements
 
@@ -39,7 +39,7 @@ Step 2. Add the dependency
 
 ```groove
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:1.5.6'
+	        implementation 'com.github.osama-raddad:FireCrasher:1.5.11'
 	}
 ```
 
