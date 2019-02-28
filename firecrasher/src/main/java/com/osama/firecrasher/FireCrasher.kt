@@ -43,30 +43,35 @@ object FireCrasher {
 
     fun recover(activity: Activity) {
         val intent = Intent(activity, activity.javaClass)
-        activity.overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         if (getBackStackCount(activity) >= 1) {
             //try to restart the failing activity
-            if (retryCount <= 3) {
+            if (retryCount <= 1) {
                 retryCount += 1
                 activity.startActivity(intent)
+                activity.overridePendingTransition(0, 0)
                 activity.finish()
+                activity.overridePendingTransition(0, 0)
             } else {
                 retryCount = 0
                 //failure in restarting the activity try to go back
                 activity.onBackPressed()
             }
         } else {
-            if (retryCount <= 3) {
+            if (retryCount <= 1) {
                 retryCount += 1
                 //try to restart the failing activity
                 activity.startActivity(intent)
+                activity.overridePendingTransition(0, 0)
                 activity.finish()
+                activity.overridePendingTransition(0, 0)
             } else {
                 retryCount = 0
                 //no activates to go back to so just restart the app
                 restartApp(activity)
+                activity.overridePendingTransition(0, 0)
                 activity.finish()
+                activity.overridePendingTransition(0, 0)
             }
         }
     }
