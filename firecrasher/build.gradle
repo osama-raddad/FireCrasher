@@ -15,7 +15,7 @@ ext {
     siteUrl = 'https://github.com/osama-raddad/FireCrasher'
     gitUrl = 'https://github.com/osama-raddad/FireCrasher.git'
 
-    libraryVersion = '1.4'
+    libraryVersion = '1.5.12'
 
     developerId = 'osama-raddad'
     developerName = 'osama raddad'
@@ -32,8 +32,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 12
-        versionName "1.5.12"
+        versionCode 13
+        versionName "1.5.13"
     }
 
     compileOptions {

@@ -25,12 +25,12 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
 
             @Override
             public void onActivityStarted(Activity activity) {
-
+                CrashHandler.this.activity = activity;
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
-
+                CrashHandler.this.activity = activity;
             }
 
             @Override

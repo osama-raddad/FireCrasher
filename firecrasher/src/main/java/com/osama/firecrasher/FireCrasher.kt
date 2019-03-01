@@ -42,7 +42,11 @@ object FireCrasher {
     }
 
     fun recover(activity: Activity) {
-        val intent = Intent(activity, activity.javaClass)
+        val intent = if (activity.intent.action == "android.intent.action.MAIN")
+            Intent(activity, activity.javaClass)
+        else
+            activity.intent
+
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         if (getBackStackCount(activity) >= 1) {
             //try to restart the failing activity
