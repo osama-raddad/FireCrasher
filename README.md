@@ -39,7 +39,7 @@ Step 2. Add the dependency
 
 ```groove
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:1.5.13'
+	        implementation 'com.github.osama-raddad:FireCrasher:2.0.0'
 	}
 ```
 
@@ -64,11 +64,10 @@ class App : Application() {
         super.onCreate()
         FireCrasher.install(this, object : CrashListener() {
 
-            override fun onCrash(throwable: Throwable, activity: Activity) {
-                Toast.makeText(activity, throwable.message, Toast.LENGTH_SHORT).show()
+            override fun onCrash(throwable: Throwable) {
+                Toast.makeText(this@App, throwable.message, Toast.LENGTH_SHORT).show()
                 // start the recovering process
-                recover(activity)
-
+                recover()
                 //you need to add your crash reporting tool here
                 //Ex: Crashlytics.logException(throwable);
             }
