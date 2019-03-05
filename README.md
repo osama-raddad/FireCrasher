@@ -76,6 +76,23 @@ class App : Application() {
 }
 ```
 
+to detarmein the crash level before srating the recovery you can use:
+```kotlin
+       FireCrasher.install(this, object : CrashListener() {
+
+            override fun onCrash(throwable: Throwable) {
+
+                evaluate { activity, crashLevel ->
+                     recover {
+                                Toast.makeText(this@App, "recover", Toast.LENGTH_LONG).show()
+                            }
+                	}
+                
+                //you need to add your crash reporting tool here
+                //Ex: Crashlytics.logException(throwable);
+            }
+        })
+```
 ## Contributing
 
 We welcome contributions to FireCrasher!
