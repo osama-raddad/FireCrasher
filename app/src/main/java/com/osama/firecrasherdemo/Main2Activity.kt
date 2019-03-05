@@ -10,19 +10,17 @@ class Main2Activity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
-        setSupportActionBar(toolbar)
     }
 
 
     override fun onResume() {
         super.onResume()
-        Handler().postDelayed({this.runOnUiThread {
-            throw Exception("Osama ex")
-        }},5000)
+        Handler().postDelayed({
+            this.runOnUiThread {
+                throw Exception("Osama ex")
+            }
+        }, 5000)
 
-        fab.setOnClickListener { view ->
-            throw Exception()
-        }
     }
 
 }

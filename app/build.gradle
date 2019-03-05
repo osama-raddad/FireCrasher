@@ -9,8 +9,8 @@ android {
         applicationId "com.osama.firecrasherdemo"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 13
-        versionName "1.5.13"
+        versionCode 14
+        versionName "2.0.0"
     }
     buildTypes {
         release {
@@ -34,5 +34,5 @@ dependencies {
     implementation project(':firecrasher')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.github.GrenderG:Toasty:1.4.0'
 }

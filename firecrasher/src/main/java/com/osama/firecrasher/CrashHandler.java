@@ -55,6 +55,11 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         };
     }
 
+    public Activity getActivity() {
+        return activity;
+    }
+
+
     void setCrashListener(CrashListener crashListener) {
         this.crashListener = crashListener;
     }
@@ -67,19 +72,9 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     public void uncaughtException(Thread thread, final Throwable throwable) {
         activity.runOnUiThread(() -> {
             if (crashListener != null) {
-                crashListener.onCrash(throwable, activity);
+                crashListener.onCrash(throwable);
             } else if (crashInterface != null) {
                 crashInterface.onCrash(throwable, activity);
-            } else {
-                AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-                alertDialog.setTitle("Crash");
-                alertDialog.setMessage(throwable.getMessage());
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Recover",
-                        (dialog, which) -> {
-                            dialog.dismiss();
-                            FireCrasher.INSTANCE.recover(activity);
-                        });
-                alertDialog.show();
             }
         });
         Log.e("FireCrasher.err", thread.getName(), throwable);
