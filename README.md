@@ -1,10 +1,13 @@
 <p align="center">
 <img src='https://cdn-images-1.medium.com/max/2600/1*7CVLni2XSYNFzy7dRHLtsQ.png'/>
-
+</p>
+<p align="center">
 <a href='https://bintray.com/osama-raddad/maven/fire-crasher?source=watch' alt='Get automatic notifications about new "fire-crasher" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
-
+</p>
+<p align="center">
  <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"/></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"/></a>
-
+</p>
+<p align="center">
 <a href='https://ko-fi.com/A4763RZL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 </p>
 
