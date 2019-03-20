@@ -1,49 +1,101 @@
-
 language: android
 jdk: oraclejdk8
-env:
-  global:
-    - ANDROID_API_LEVEL=28
-    - ANDROID_BUILD_TOOLS_VERSION=28.0.8
-    - ANDROID_EMU_API_LEVEL=28
-    - ANDROID_ABI=google_apis/armeabi-v7a
-    - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
-    - QEMU_AUDIO_DRV=none # Remove audio
 
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache
+#sudo: false
 
 android:
-  licenses:
-    - 'android-sdk-preview-license-.+'
-    - 'android-sdk-license-.+'
-    - 'google-gdk-license-.+'
   components:
+    # Uncomment the lines below if you want to
+    # use the latest revision of Android SDK Tools
+    - tools
     - platform-tools
     - tools
-    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
-    - android-$ANDROID_API_LEVEL
-    # For Google Maps API v1
-    - addon-google_apis-google-$ANDROID_API_LEVEL
-    # Google Play Services
+
+    # The BuildTools version used by your project
+    - build-tools-28.0.0
+
+    # The SDK version used to compile your project
+    - android-28
+
+    # Additional components
     - extra-google-google_play_services
-    # Support library
-    - extra-android-support
-    # Latest artifacts in local repository
     - extra-google-m2repository
     - extra-android-m2repository
-    # Specify at least one system image
-    - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
-before_script:
-    - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-    - emulator -avd test -no-audio -no-window &
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &
-script:
-    - ./gradlew clean installDebug
-    - ./gradlew check
-    - ./gradlew testDebugUnitTest
-    - ./gradlew connectedDebugAndroidTest
+    # - addon-google_apis-google-19
+
+    # Specify at least one system image,
+    # if you need to run emulator(s) during your tests
+    - sys-img-armeabi-v7a-android-22
+    - sys-img-armeabi-v7a-android-17
+
+#before_script:
+#  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+#  - emulator -avd test -no-skin -no-audio -no-window &
+#  - android-wait-for-emulator
+#  - adb shell input keyevent 82 &
+
+install: skip
+
+# env:
+#   global:
+#     - CACHE_DIR=$([ $TRAVIS_OS_NAME = 'linux' ] && echo "FOO" || echo "BAR")
+
+# cache:
+#   directories:
+#     - $CACHE_DIR
+
+# env:
+#   global:
+#     - PATH=/usr/local/android-sdk/tools/bin:$PATH
+
+script: skip
+# android:
+#   components:
+#     - tools
+#     - platform-tools
+#     - tools
+
+#     - android-25
+
+#     - build-tools-25.0.2
+#     - extra
+#     - extra-google-m2repository
+#     - extra-android-m2repository
+#     - extra-android-support
+
+# jdk: oraclejdk8
+
+matrix:
+  include:
+    - sudo: false
+      dist: precise
+      env: DIST=precise STACK=EC2
+    # - sudo: required
+    #   dist: precise
+    #   env: DIST=precise STACK=GCE
+    # - sudo: false
+    #   dist: trusty
+    #   env: DIST=trusty STACK=EC2
+    # - sudo: required
+    #   dist: trusty
+    #   env: DIST=trusty STACK=GCE
+    # - sudo: false
+    #   dist: trusty
+    #   group: edge
+    #   env: DIST=trusty STACK=EC2 GROUP=edge
+    # - sudo: required
+    #   dist: trusty
+    #   group: edge
+    #   env: DIST=trusty STACK=GCE GROUP=edge
+#     - os: osx
+
+
+notifications:
+  email: false
+
+  #  slack:
+  #  rooms:
+  #    - secure: "KZTfjxhkOdDDZYD2ThBILt2ShYtdEee3PudFZlQBfpxG9N470GfxnKVfOl7Odu4lN6cIupwC4S4BnehubEywSR99l60VmfhePUCTqDLYy+iR9+guTvaECdXdaau3jTKhFdu5u60ITsiw5Yb+hwAaGFO0HmQhqR9XVr/U8IGQlok="
+  #  template:
+  #    - "Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository}@%{branch} by %{author} %{result} in %{duration} (elapsed time: %{elapsed_time}) subject: %{commit_subject} message: %{commit_message} foobar"
+  #  on_success: always
