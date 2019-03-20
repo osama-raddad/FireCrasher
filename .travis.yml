@@ -38,11 +38,7 @@ android:
 
 # start Android emulator
 
-bedfore_install:
-  - git update-index --chmod=+x gradlew
-  - yes | sdkmanager "platforms;android-28"
-  - ./gradlew build connectedCheck
-  - chmod +x ./gradlew
+script: ./gradlew assembleDebug
 
 notifications:
   email: true
