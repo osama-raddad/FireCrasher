@@ -44,7 +44,7 @@ bedfore_install:
   - chmod +x ./gradlew
 
 before_script:
-  - echo no | android create avd --force -n test -t android-28 --abi armeabi-v7a
+  - echo no | android create avd --force -n test -t android-28 --abi armeabi-v7a-android-28
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
