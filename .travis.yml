@@ -1,7 +1,7 @@
 language: android
 jdk: oraclejdk8
 
-#sudo: false
+sudo: false
 
 android:
   components:
@@ -28,66 +28,66 @@ android:
     - sys-img-armeabi-v7a-android-22
     - sys-img-armeabi-v7a-android-17
 
-#before_script:
-#  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-#  - emulator -avd test -no-skin -no-audio -no-window &
-#  - android-wait-for-emulator
-#  - adb shell input keyevent 82 &
+before_script:
+  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
 install: skip
 
-# env:
-#   global:
-#     - CACHE_DIR=$([ $TRAVIS_OS_NAME = 'linux' ] && echo "FOO" || echo "BAR")
+ env:
+   global:
+     - CACHE_DIR=$([ $TRAVIS_OS_NAME = 'linux' ] && echo "FOO" || echo "BAR")
 
-# cache:
-#   directories:
-#     - $CACHE_DIR
+ cache:
+   directories:
+     - $CACHE_DIR
 
-# env:
-#   global:
-#     - PATH=/usr/local/android-sdk/tools/bin:$PATH
+ env:
+   global:
+     - PATH=/usr/local/android-sdk/tools/bin:$PATH
 
-script: skip
-# android:
-#   components:
-#     - tools
-#     - platform-tools
-#     - tools
+script:
+ android:
+   components:
+     - tools
+     - platform-tools
+     - tools
 
-#     - android-25
+     - android-28
 
-#     - build-tools-25.0.2
-#     - extra
-#     - extra-google-m2repository
-#     - extra-android-m2repository
-#     - extra-android-support
+     - build-tools-28.0.0
+     - extra
+     - extra-google-m2repository
+     - extra-android-m2repository
+     - extra-android-support
 
-# jdk: oraclejdk8
+ jdk: oraclejdk8
 
 matrix:
   include:
     - sudo: false
       dist: precise
       env: DIST=precise STACK=EC2
-    # - sudo: required
-    #   dist: precise
-    #   env: DIST=precise STACK=GCE
-    # - sudo: false
-    #   dist: trusty
-    #   env: DIST=trusty STACK=EC2
-    # - sudo: required
-    #   dist: trusty
-    #   env: DIST=trusty STACK=GCE
-    # - sudo: false
-    #   dist: trusty
-    #   group: edge
-    #   env: DIST=trusty STACK=EC2 GROUP=edge
-    # - sudo: required
-    #   dist: trusty
-    #   group: edge
-    #   env: DIST=trusty STACK=GCE GROUP=edge
-#     - os: osx
+     - sudo: required
+       dist: precise
+       env: DIST=precise STACK=GCE
+     - sudo: false
+       dist: trusty
+       env: DIST=trusty STACK=EC2
+     - sudo: required
+       dist: trusty
+       env: DIST=trusty STACK=GCE
+     - sudo: false
+       dist: trusty
+       group: edge
+       env: DIST=trusty STACK=EC2 GROUP=edge
+     - sudo: required
+       dist: trusty
+       group: edge
+       env: DIST=trusty STACK=GCE GROUP=edge
+     - os: osx
 
 
 notifications:
