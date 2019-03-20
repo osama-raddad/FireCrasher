@@ -16,6 +16,7 @@ out/
 # Gradle files
 .gradle/
 build/
+.idea/
 
 
 # Built application files

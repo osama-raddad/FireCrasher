@@ -7,32 +7,13 @@ import com.osama.firecrasher.CrashHandler.getBackStackCount
 
 
 object FireCrasher {
-     var retryCount: Int = 0
+    var retryCount: Int = 0
         private set
     private val crashHandler: CrashHandler by lazy { CrashHandler() }
-
-    fun install(application: Application) {
-        if (!FireLooper.isSafe) {
-            application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
-            FireLooper.install()
-            FireLooper.setUncaughtExceptionHandler(crashHandler)
-            Thread.setDefaultUncaughtExceptionHandler(crashHandler)
-        }
-    }
 
     fun install(application: Application, crashListener: CrashListener) {
         if (!FireLooper.isSafe) {
             crashHandler.setCrashListener(crashListener)
-            application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
-            FireLooper.install()
-            FireLooper.setUncaughtExceptionHandler(crashHandler)
-            Thread.setDefaultUncaughtExceptionHandler(crashHandler)
-        }
-    }
-
-    fun install(application: Application, crashListener: CrashInterface) {
-        if (!FireLooper.isSafe) {
-            crashHandler.setCrashInterface(crashListener)
             application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
             FireLooper.install()
             FireLooper.setUncaughtExceptionHandler(crashHandler)
@@ -102,11 +83,15 @@ object FireCrasher {
     }
 
     private fun restartActivity(activityPair: Pair<Activity?, Intent?>) {
+        if (retryCount == 0) {
+            activityPair.first?.recreate()
+        } else {
+            activityPair.first?.startActivity(activityPair.second)
+            activityPair.first?.overridePendingTransition(0, 0)
+            activityPair.first?.finish()
+            activityPair.first?.overridePendingTransition(0, 0)
+        }
         retryCount += 1
-        activityPair.first?.startActivity(activityPair.second)
-        activityPair.first?.overridePendingTransition(0, 0)
-        activityPair.first?.finish()
-        activityPair.first?.overridePendingTransition(0, 0)
     }
 
     private fun goBack(activityPair: Pair<Activity?, Intent?>) {

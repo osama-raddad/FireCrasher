@@ -21,4 +21,9 @@ public class MainActivity extends Activity {
     public void next(View view) {
         startActivity(new Intent(this, Main2Activity.class));
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

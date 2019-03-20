@@ -14,7 +14,6 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     private Activity activity;
     private Application.ActivityLifecycleCallbacks lifecycleCallbacks;
     private CrashListener crashListener;
-    private CrashInterface crashInterface;
 
     CrashHandler() {
         lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
@@ -64,18 +63,12 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         this.crashListener = crashListener;
     }
 
-    void setCrashInterface(CrashInterface crashListener) {
-        this.crashInterface = crashListener;
-    }
-
     @Override
     public void uncaughtException(Thread thread, final Throwable throwable) {
         activity.runOnUiThread(() -> {
             if (crashListener != null) {
                 crashListener.onCrash(throwable);
-            } else if (crashInterface != null) {
-                crashInterface.onCrash(throwable, activity);
-            }
+            } 
         });
         Log.e("FireCrasher.err", thread.getName(), throwable);
     }
