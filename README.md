@@ -11,13 +11,14 @@
 <a href='https://ko-fi.com/A4763RZL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 </p>
 
-<div class="myWrapper" markdown="1">
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22)](https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade)
+</p>
+<p align="center">
+<a href='https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade' target='_blank'><img src='https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22' border='0' alt='Codacy Badge' /></a>
+</p>
 
 [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher)
 
 [![Stories in Ready](https://badge.waffle.io/osama-raddad/FireCrasher.png?label=ready&title=Ready)](https://waffle.io/osama-raddad/FireCrasher) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-</div>
 
 # FireCrasher
 
