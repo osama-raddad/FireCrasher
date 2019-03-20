@@ -33,6 +33,7 @@ before_install:
 script:
     - ./gradlew build connectedCheck
     - ./gradlew clean build
+    - chmod +x ./gradlew build connectedCheck
 
 deploy:
   provider: script
