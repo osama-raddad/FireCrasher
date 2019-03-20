@@ -39,12 +39,12 @@ android:
 # start Android emulator
 
 bedfore_install:
-  - yes | sdkmanager "platforms;android-22"
+  - yes | sdkmanager "platforms;android-28"
   - ./gradlew build connectedCheck
   - chmod +x ./gradlew
 
 before_script:
-  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - echo no | android create avd --force -n test -t android-28 --abi armeabi-v7a
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
