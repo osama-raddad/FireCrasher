@@ -1,12 +1,44 @@
-dependencies:
-  pre:
-    - echo y | android update sdk --no-ui --all --filter tool,extra-android-m2repository,extra-android-support,extra-google-google_play_services,extra-google-m2repository,android-25
-    - echo y | android update sdk --no-ui --all --filter build-tools-25.0.2,extra-android-m2repository,android-25
-    - curl http://www.jpm4j.org/install/script > jpmInstall.sh
-    - sudo sh jpmInstall.sh
-    - mkdir $ANDROID_HOME/licenses; ls -l $ANDROID_HOME/licenses
-    - cp --force licenses/* $ANDROID_HOME/licenses; ls -l $ANDROID_HOME/licenses
+language: android 
 
-machine:
-  java:
-    version: oraclejdk8
+jdk: oraclejdk8
+
+sudo: false
+
+before_cache:
+    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:      #Cache all dirs under .gradle folder
+    - $HOME/.gradle/daemon      #Cache daemon logs
+    - $HOME/.gradle/native      #Cache library downloaded from the gradle dependency
+    - $HOME/.gradle/wrapper     #Cache the gradle
+
+android:
+  components:
+    - platform-tools
+    - tools
+    - build-tools-27.0.3
+    - android-27
+    - sys-img-armeabi-v7a-android-24
+    - extra-android-m2repository
+    - extra-google-m2repository
+    - extra-android-support
+    - extra-google-google_play_services
+
+before_install:
+  - mkdir "$ANDROID_HOME/licenses" || true
+  - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+  - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license" // Accepting license
+  - chmod +x gradlew // Add permission
+
+script:
+    - ./gradlew build connectedCheck
+    - ./gradlew clean build
+
+deploy:
+  provider: script
+  script: ./gradlew :clean :droidils:assembleRelease :droidils:bintrayUpload #replace with your project name
+  skip_cleanup: true # to upload artifacts created during the build
+  dry-run: false
+  on:
+    branch: master
