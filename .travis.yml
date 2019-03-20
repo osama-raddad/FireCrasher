@@ -29,7 +29,7 @@ android:
 
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-28
+    - sys-img-armeabi-v7a-addon-google_apis-google-google_apis/armeabi-v7a
 
   licenses:
     - 'android-sdk-preview-license-52d11cd2'
