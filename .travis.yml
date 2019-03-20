@@ -1,45 +1,61 @@
+    # Disabling sudo moves build to the Container Based Infrastructure on Travis CI
+
 language: android
 jdk: oraclejdk8
+
 env:
   global:
-    - ANDROID_API_LEVEL=28
-    - ANDROID_BUILD_TOOLS_VERSION=28.0.0
-    - ANDROID_EMU_API_LEVEL=21
-    - ANDROID_ABI=armeabi-v7a
-    - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
-    - QEMU_AUDIO_DRV=none # Remove audio
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache
+    # wait up to 10 minutes for adb to connect to emulator
+    - ADB_INSTALL_TIMEOUT=10
 
 android:
-  licenses:
-    - 'android-sdk-preview-license-.+'
-    - 'android-sdk-license-.+'
-    - 'google-gdk-license-.+'
   components:
-    - tools
+    # Uncomment the lines below if you want to
+    # use the latest revision of Android SDK Tools
     - platform-tools
+    - tools
+
     # The BuildTools version used by your project
-    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    - build-tools-28.0.2
+
     # The SDK version used to compile your project
-    - android-$ANDROID_API_LEVEL
+    - android-28
+    - extra
     # Additional components
     - extra-google-google_play_services
     - extra-google-m2repository
-    - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
     - extra-android-m2repository
-    - addon-google_apis-google-$ANDROID_API_LEVEL
+    - extra-android-support
+
+    # Specify at least one system image,
+    # if you need to run emulator(s) during your tests
+    - sys-img-armeabi-v7a-android-28
+
+  licenses:
+    - 'android-sdk-preview-license-52d11cd2'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+
+# start Android emulator
+
+bedfore_install:
+  - yes | sdkmanager "platforms;android-22"
+  - ./gradlew build connectedCheck
+  - chmod +x ./gradlew
+
 before_script:
-    - echo no | android create avd --force -n test -t android-28 --abi armeabi-v7a
-    - emulator -avd test -no-audio -no-window &
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &
-script:
-    - ./gradlew clean installDebug
-    - ./gradlew check
-    - ./gradlew testDebugUnitTest
-    - ./gradlew connectedDebugAndroidTest
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - emulator -avd test -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+
+notifications:
+  email: true
+
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle
+    - $HOME/.android
+    - ${TRAVIS_BUILD_DIR}/gradle/caches/
+    - ${TRAVIS_BUILD_DIR}/gradle/wrapper/dists/
