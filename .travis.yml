@@ -32,4 +32,4 @@ before_install:
 
 # Only run tests on the main two OneBusAway brand flavors
 script:
-  - ./gradlew assembleDebug
+  - ./gradlew compileDebug --stacktrace
