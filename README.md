@@ -1,10 +1,23 @@
+<p align="center">
+<img src='https://cdn-images-1.medium.com/max/2600/1*7CVLni2XSYNFzy7dRHLtsQ.png'/>
+</p>
+<p align="center">
 <a href='https://bintray.com/osama-raddad/maven/fire-crasher?source=watch' alt='Get automatic notifications about new "fire-crasher" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
-
-[![Stories in Ready](https://badge.waffle.io/osama-raddad/FireCrasher.png?label=ready&title=Ready)](https://waffle.io/osama-raddad/FireCrasher) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22)](https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade) <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"></img></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"></img></a> [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher)
-
+</p>
+<p align="center">
+ <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"/></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"/></a>
+</p>
+<p align="center">
 <a href='https://ko-fi.com/A4763RZL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+</p>
+
+</p>
+<p align="center">
+<a href='https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade' target='_blank'><img src='https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22' border='0' alt='Codacy Badge' /></a>
+</p>
+
+[![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![Stories in Ready](https://badge.waffle.io/osama-raddad/FireCrasher.png?label=ready&title=Ready)](https://waffle.io/osama-raddad/FireCrasher) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Build Status](https://travis-ci.org/osama-raddad/FireCrasher.svg?branch=master)](https://travis-ci.org/osama-raddad/FireCrasher)
+
 
 # FireCrasher
 
@@ -39,7 +52,7 @@ Step 2. Add the dependency
 
 ```groove
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:1.5.13'
+	        implementation 'com.github.osama-raddad:FireCrasher:2.0.0'
 	}
 ```
 
@@ -64,11 +77,10 @@ class App : Application() {
         super.onCreate()
         FireCrasher.install(this, object : CrashListener() {
 
-            override fun onCrash(throwable: Throwable, activity: Activity) {
-                Toast.makeText(activity, throwable.message, Toast.LENGTH_SHORT).show()
+            override fun onCrash(throwable: Throwable) {
+                Toast.makeText(this@App, throwable.message, Toast.LENGTH_SHORT).show()
                 // start the recovering process
-                recover(activity)
-
+                recover()
                 //you need to add your crash reporting tool here
                 //Ex: Crashlytics.logException(throwable);
             }
@@ -77,6 +89,23 @@ class App : Application() {
 }
 ```
 
+to detarmein the crash level before srating the recovery you can use:
+```kotlin
+       FireCrasher.install(this, object : CrashListener() {
+
+            override fun onCrash(throwable: Throwable) {
+
+                evaluate { activity, crashLevel ->
+                     recover {
+                                Toast.makeText(this@App, "recover", Toast.LENGTH_LONG).show()
+                            }
+                	}
+                
+                //you need to add your crash reporting tool here
+                //Ex: Crashlytics.logException(throwable);
+            }
+        })
+```
 ## Contributing
 
 We welcome contributions to FireCrasher!
