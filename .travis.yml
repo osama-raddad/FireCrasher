@@ -6,7 +6,7 @@ jdk: oraclejdk8
 env:
   global:
     # wait up to 10 minutes for adb to connect to emulator
-    - ADB_INSTALL_TIMEOUT=10
+    - ADB_INSTALL_TIMEOUT=40
 
 android:
   components:
