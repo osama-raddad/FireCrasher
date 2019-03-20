@@ -1,55 +1,44 @@
-language: android
-sudo: required
+language: android 
+
 jdk: oraclejdk8
 
+sudo: false
 
+before_cache:
+    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
 cache:
- directories:
- - $HOME/.gradle/caches/
- - $HOME/.gradle/wrapper/
-
-env:
- global:
- - ANDROID_API=23
- - EMULATOR_API=21
- - ANDROID_BUILD_TOOLS=23.0.3
- - ADB_INSTALL_TIMEOUT=5 # minutes
- - secure: "kYQFW12wY9zzMNqtor4sTeE4k/877t0igpS/AaPon7MNr+ebqEkeg9z6L1sE+81bopDX+0K62AxO4mKVxOiGGGVU5JS1ZFWg/BhPyKCThm1tUzXCBs5s8AxWU9s9MudfTHgPLwsOhvpKogivA0ZXt5iEFrkv57A51qZFMQ0Irl8iAaMiwjzv+FRT26jCCBCKB5jlRwocwOB7wEujlUN289i5y9o/wcWhBmA5YY7y64hdlZEs/bmF7RXXFpsRzmpvcm9rbnffBfSgDXAmnM1U7S9BLNgxtEoXraXlVlejnkti8+7aBmAqbQTto69eLPJlnGZ917BQLuhPqdapMNvLOwGP/CUVkzAMYsIndQafJsleRTYIRTlH2I+/ZMmaCZVUE4dxO97j1Nrbbksqb5zTzxKVJjgF5FpgZoa8KZeKh5TvFzWP5ZON53UcKM34J2D9juV6iNt34yffYq5OPkCblDHPiL9SbK01fGYlgVhdO9w9O/D+ybdsPC32syHnQgNQTH7GZlIJdJzamv9dN4zB/Hqk3LlECMHXWdYxCP/2EnEIFWO9P0TPw+Fb2B0t7hi/8ksvd7O2PaK3JL9i39prR4ZGeNkrJ3EmmM4dOV8CVZpTLrx+FshHgEszkmkn/nuiMrEqdz/4LK0fRsPLXkr9RFd2HJGrW6ng/lPYkVBT60w="
- - secure: "0Pm10LgXvYeSTGpK6QD3+BCMQv2C5OrBubk67im9R1r9HnxBViyGihZrnOzOdUDnP/j3VwCiuRmWBjmXVmG3c1K+vSpba14H3G9FFKQAwaXcKx3fsMVrXc2NFINjwL8tjKYWAQOPrXC2c1GDQiPOYgWP0YNK17UkAX0nRDZ7nCXZRvlG9xV+TF7lHKgsg7Twjp9hvXZaPJYnGPSyuko6JkBtuGstdptaO7OjfaRCrotiWT848Q/KzOQdVAzTmxMARInMRMXEP+XFkzEh7MKCx1rfz6xVvnA4iTEK8XHmk+/iqpTMFRHr2TpfT0QAF/+4hBpnJ6460ySqybUYd5kgJap+v+lL6w3s8o6gISR6m7YltqelwDeku51ZmgDtOPVmsfJIAd+XQ0SwD0gYd8r//wnNPKssGoGgDqp56g9lVlhzo9ZAkRk2PZh+o8G6vZpARIPnG2a/ENx8tC4QqoiGoR4swrgqDtqU6eruB0dfoNkkr+RiNTKsfJPs4ktQ31dF/qRJW/uLHSPWWrzonn2TE2+wf4pq1lYXadGfl+GhMcuXxTaWP9mEviS2BliGwVHQ8hn2yI40dXfIjZ0yZJPujQfRW/9tbAuKPGFdUm8RcglOpHOdNczMnodq0WfkbIVi/ohYEWmlK8LLvrhafNsevy+gP+c2Fqxw5mI3WnY/T1o="
+  directories:      #Cache all dirs under .gradle folder
+    - $HOME/.gradle/daemon      #Cache daemon logs
+    - $HOME/.gradle/native      #Cache library downloaded from the gradle dependency
+    - $HOME/.gradle/wrapper     #Cache the gradle
 
 android:
- components:
- - tools
- - platform-tools
- - build-tools-$ANDROID_BUILD_TOOLS
- - android-$ANDROID_API
- - android-$EMULATOR_API_LEVEL
- - extra-google-m2repository
- - extra-android-m2repository # for design library
- - addon-google_apis-google-19 # google play services
- - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
- - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
-
- licenses:
- - android-sdk-preview-license-.+
- - android-sdk-license-.+
- - google-gdk-license-.+
+  components:
+    - platform-tools
+    - tools
+    - build-tools-27.0.3
+    - android-27
+    - sys-img-armeabi-v7a-android-24
+    - extra-android-m2repository
+    - extra-google-m2repository
+    - extra-android-support
+    - extra-google-google_play_services
 
 before_install:
-- openssl aes-256-cbc -K $encrypted_c0801aa05af4_key -iv $encrypted_c0801aa05af4_iv -in example_keystore.jks.enc -out example_keystore.jks -d
-- mkdir "$ANDROID_HOME/licenses" || true
-- echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
-- echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
-- chmod +x gradlew
-- ./gradlew dependencies || true # DON'T ADD unless you are getting "Install missing components using SDK manager"
-#Source: https://medium.com/@oldergod/constraint-layout-and-circleci-travis-d50342696d2
-
-before_script:
-- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-- emulator -avd test -no-skin -no-audio -no-window &
-- android-wait-for-emulator
-- adb shell input keyevent 82 &
+  - mkdir "$ANDROID_HOME/licenses" || true
+  - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+  - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license" // Accepting license
+  - chmod +x gradlew // Add permission
 
 script:
-- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
+    - ./gradlew build connectedCheck
+    - ./gradlew clean build
+
+deploy:
+  provider: script
+  script: ./gradlew :clean :droidils:assembleRelease :droidils:bintrayUpload #replace with your project name
+  skip_cleanup: true # to upload artifacts created during the build
+  dry-run: false
+  on:
+    branch: master
