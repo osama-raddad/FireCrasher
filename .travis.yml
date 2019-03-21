@@ -29,6 +29,9 @@ android:
 
 before_install:
   - yes | sdkmanager "platforms;android-28"
+  
+before_script:
+  - chmod +x ./gradlew
 
 # Only run tests on the main two OneBusAway brand flavors
 script:
