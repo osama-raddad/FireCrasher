@@ -21,7 +21,7 @@
 <a href='https://travis-ci.org/osama-raddad/FireCrasher' target='_blank'><img src='https://travis-ci.org/osama-raddad/FireCrasher.svg?branch=master' border='0' alt='Build Status' /></a>
 </p>
 
-[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![Stories in Ready](https://badge.waffle.io/osama-raddad/FireCrasher.png?label=ready&title=Ready)](https://waffle.io/osama-raddad/FireCrasher) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
 # FireCrasher
