@@ -84,14 +84,21 @@ object FireCrasher {
     }
 
     private fun restartActivity(activityPair: Pair<Activity?, Intent?>) {
-        if (retryCount == 0) {
-            activityPair.first?.recreate()
-        } else {
-            activityPair.first?.startActivity(activityPair.second)
-            activityPair.first?.overridePendingTransition(0, 0)
-            activityPair.first?.finish()
-            activityPair.first?.overridePendingTransition(0, 0)
+        val activity = activityPair.first ?: run {
+            retryCount += 1
+            return
         }
+
+        when (retryCount) {
+            0 -> activity.recreate()
+            else -> {
+                activity.startActivity(activityPair.second)
+                activity.overridePendingTransition(0, 0)
+                activity.finish()
+                activity.overridePendingTransition(0, 0)
+            }
+        }
+        
         retryCount += 1
     }
 
