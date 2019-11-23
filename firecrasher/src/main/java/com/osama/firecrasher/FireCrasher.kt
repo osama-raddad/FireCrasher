@@ -74,10 +74,10 @@ object FireCrasher {
 
     private fun getActivityPair(): Pair<Activity?, Intent?> {
         val activity = crashHandler.activity
-        val intent = if (activity?.intent?.action == "android.intent.action.MAIN")
+        val intent: Intent? = if (activity.intent?.action == "android.intent.action.MAIN")
             Intent(activity, activity.javaClass)
         else
-            activity?.intent
+            activity.intent
 
         intent?.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         return Pair(activity, intent)
@@ -98,7 +98,7 @@ object FireCrasher {
                 activity.overridePendingTransition(0, 0)
             }
         }
-        
+
         retryCount += 1
     }
 
