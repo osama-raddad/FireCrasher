@@ -69,7 +69,7 @@ class FireLooper : Runnable {
         private var EXIT: Any? = null
         private var FIRE_LOOPER_THREAD_LOCAL: ThreadLocal<FireLooper>? = null
         private var uncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
-        private var handler: Handler? = null
+        private var handler: Handler
 
         init {
             EXIT = Any()
@@ -78,8 +78,8 @@ class FireLooper : Runnable {
         }
 
         internal fun install() {
-            handler!!.removeMessages(0, EXIT)
-            handler!!.post(FireLooper())
+            handler.removeMessages(0, EXIT)
+            handler.post(FireLooper())
         }
 
         internal val isSafe: Boolean
