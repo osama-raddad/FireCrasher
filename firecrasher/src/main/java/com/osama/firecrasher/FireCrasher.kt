@@ -100,17 +100,18 @@ object FireCrasher {
     }
 
     private fun restartApp(activityPair: Pair<Activity?, Intent?>) {
-        val packageName = activityPair.first?.baseContext?.packageName
-        if (packageName != null) {
-            val intent = activityPair.first?.baseContext?.packageManager
-                    ?.getLaunchIntentForPackage(packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                activityPair.first?.startActivity(intent)
-            }
-            activityPair.first?.overridePendingTransition(0, 0)
-            activityPair.first?.finish()
-            activityPair.first?.overridePendingTransition(0, 0)
+        val activity = activityPair.first ?: return
+        val packageName = activity.baseContext.packageName
+
+        activity.baseContext.packageManager.getLaunchIntentForPackage(packageName)?.let { intent ->
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            activity.startActivity(intent)
+        }
+
+        with(activity) {
+            overridePendingTransition(0, 0)
+            finish()
+            overridePendingTransition(0, 0)
         }
     }
 }
