@@ -2,11 +2,9 @@ package com.osama.firecrasher;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import java.util.List;
 
@@ -70,7 +68,6 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
                 crashListener.onCrash(throwable);
             } 
         });
-        Log.e("FireCrasher.err", thread.getName(), throwable);
     }
 
     Application.ActivityLifecycleCallbacks getLifecycleCallbacks() {
