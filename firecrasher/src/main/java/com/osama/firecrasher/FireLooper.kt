@@ -9,7 +9,7 @@ import java.lang.reflect.Method
 class FireLooper : Runnable {
 
     override fun run() {
-        if (FIRE_LOOPER_THREAD_LOCAL!!.get() != null)
+        if (FIRE_LOOPER_THREAD_LOCAL.get() != null)
             return
 
         val next: Method
@@ -25,7 +25,7 @@ class FireLooper : Runnable {
             return
         }
 
-        FIRE_LOOPER_THREAD_LOCAL!!.set(this)
+        FIRE_LOOPER_THREAD_LOCAL.set(this)
         val queue = Looper.myQueue()
         Binder.clearCallingIdentity()
 
