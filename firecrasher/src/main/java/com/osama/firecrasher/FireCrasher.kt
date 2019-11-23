@@ -7,18 +7,19 @@ import com.osama.firecrasher.CrashHandler.getBackStackCount
 
 
 object FireCrasher {
+
     var retryCount: Int = 0
         private set
+
     private val crashHandler: CrashHandler by lazy { CrashHandler() }
 
     fun install(application: Application, crashListener: CrashListener) {
-        if (!FireLooper.isSafe) {
-            crashHandler.setCrashListener(crashListener)
-            application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
-            FireLooper.install()
-            FireLooper.setUncaughtExceptionHandler(crashHandler)
-            Thread.setDefaultUncaughtExceptionHandler(crashHandler)
-        }
+        if (FireLooper.isSafe) return
+        crashHandler.setCrashListener(crashListener)
+        application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
+        FireLooper.install()
+        FireLooper.setUncaughtExceptionHandler(crashHandler)
+        Thread.setDefaultUncaughtExceptionHandler(crashHandler)
     }
 
     fun evaluate(): CrashLevel {
