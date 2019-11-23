@@ -62,20 +62,14 @@ class FireLooper : Runnable {
 
         }
 
-        FIRE_LOOPER_THREAD_LOCAL!!.set(null)
+        FIRE_LOOPER_THREAD_LOCAL.set(null)
     }
 
     companion object {
-        private var EXIT: Any? = null
-        private var FIRE_LOOPER_THREAD_LOCAL: ThreadLocal<FireLooper>? = null
+        private var EXIT = Any()
+        private var FIRE_LOOPER_THREAD_LOCAL: ThreadLocal<FireLooper> = ThreadLocal()
         private var uncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
-        private var handler: Handler
-
-        init {
-            EXIT = Any()
-            FIRE_LOOPER_THREAD_LOCAL = ThreadLocal()
-            handler = Handler(Looper.getMainLooper())
-        }
+        private var handler: Handler = Handler(Looper.getMainLooper())
 
         internal fun install() {
             handler.removeMessages(0, EXIT)
@@ -83,10 +77,9 @@ class FireLooper : Runnable {
         }
 
         internal val isSafe: Boolean
-            get() = FIRE_LOOPER_THREAD_LOCAL!!.get() != null
+            get() = FIRE_LOOPER_THREAD_LOCAL.get() != null
 
-        internal fun setUncaughtExceptionHandler(
-                h: Thread.UncaughtExceptionHandler) {
+        internal fun setUncaughtExceptionHandler(h: Thread.UncaughtExceptionHandler) {
             uncaughtExceptionHandler = h
         }
     }
