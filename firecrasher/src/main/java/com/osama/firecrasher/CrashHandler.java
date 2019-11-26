@@ -2,7 +2,6 @@ package com.osama.firecrasher;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
@@ -68,7 +67,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         activity.runOnUiThread(() -> {
             if (crashListener != null) {
                 crashListener.onCrash(throwable);
-            } 
+            }
         });
         Log.e("FireCrasher.err", thread.getName(), throwable);
     }
@@ -77,7 +76,8 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         return lifecycleCallbacks;
     }
 
-    public static int getBackStackCount(Activity activity) {
+    public int getBackStackCount() {
+        if (activity == null) return 0;
         ActivityManager m = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> runningTaskInfoList = m.getRunningTasks(10);
         int numOfActivities = 0;

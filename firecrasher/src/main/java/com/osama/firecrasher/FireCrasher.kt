@@ -3,7 +3,6 @@ package com.osama.firecrasher
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import com.osama.firecrasher.CrashHandler.getBackStackCount
 
 
 object FireCrasher {
@@ -27,7 +26,7 @@ object FireCrasher {
             retryCount <= 1 ->
                 //try to restart the failing activity
                 CrashLevel.LEVEL_ONE
-            getBackStackCount(crashHandler.activity) >= 1 ->
+            crashHandler.backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
                 CrashLevel.LEVEL_TWO
             else ->
@@ -41,7 +40,7 @@ object FireCrasher {
             retryCount <= 1 ->
                 //try to restart the failing activity
                 onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_ONE)
-            getBackStackCount(crashHandler.activity) >= 1 ->
+            crashHandler.backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
                 onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_TWO)
             else ->
@@ -73,11 +72,11 @@ object FireCrasher {
 
 
     private fun getActivityPair(): Pair<Activity?, Intent?> {
-        val activity = crashHandler.activity
-        val intent: Intent? = if (activity.intent?.action == "android.intent.action.MAIN")
+        val activity: Activity? = crashHandler.activity
+        val intent: Intent? = if (activity?.intent?.action == "android.intent.action.MAIN")
             Intent(activity, activity.javaClass)
         else
-            activity.intent
+            activity?.intent
 
         intent?.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         return Pair(activity, intent)
