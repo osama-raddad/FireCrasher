@@ -3,22 +3,22 @@ package com.osama.firecrasher
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import com.osama.firecrasher.CrashHandler.getBackStackCount
 
 
 object FireCrasher {
+
     var retryCount: Int = 0
         private set
+
     private val crashHandler: CrashHandler by lazy { CrashHandler() }
 
     fun install(application: Application, crashListener: CrashListener) {
-        if (!FireLooper.isSafe) {
-            crashHandler.setCrashListener(crashListener)
-            application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
-            FireLooper.install()
-            FireLooper.setUncaughtExceptionHandler(crashHandler)
-            Thread.setDefaultUncaughtExceptionHandler(crashHandler)
-        }
+        if (FireLooper.isSafe) return
+        crashHandler.setCrashListener(crashListener)
+        application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
+        FireLooper.install()
+        FireLooper.setUncaughtExceptionHandler(crashHandler)
+        Thread.setDefaultUncaughtExceptionHandler(crashHandler)
     }
 
     fun evaluate(): CrashLevel {
@@ -26,7 +26,7 @@ object FireCrasher {
             retryCount <= 1 ->
                 //try to restart the failing activity
                 CrashLevel.LEVEL_ONE
-            getBackStackCount(crashHandler.activity) >= 1 ->
+            crashHandler.backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
                 CrashLevel.LEVEL_TWO
             else ->
@@ -40,7 +40,7 @@ object FireCrasher {
             retryCount <= 1 ->
                 //try to restart the failing activity
                 onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_ONE)
-            getBackStackCount(crashHandler.activity) >= 1 ->
+            crashHandler.backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
                 onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_TWO)
             else ->
@@ -72,8 +72,8 @@ object FireCrasher {
 
 
     private fun getActivityPair(): Pair<Activity?, Intent?> {
-        val activity = crashHandler.activity
-        val intent = if (activity?.intent?.action == "android.intent.action.MAIN")
+        val activity: Activity? = crashHandler.activity
+        val intent: Intent? = if (activity?.intent?.action == "android.intent.action.MAIN")
             Intent(activity, activity.javaClass)
         else
             activity?.intent
@@ -83,14 +83,21 @@ object FireCrasher {
     }
 
     private fun restartActivity(activityPair: Pair<Activity?, Intent?>) {
-        if (retryCount == 0) {
-            activityPair.first?.recreate()
-        } else {
-            activityPair.first?.startActivity(activityPair.second)
-            activityPair.first?.overridePendingTransition(0, 0)
-            activityPair.first?.finish()
-            activityPair.first?.overridePendingTransition(0, 0)
+        val activity = activityPair.first ?: run {
+            retryCount += 1
+            return
         }
+
+        when (retryCount) {
+            0 -> activity.recreate()
+            else -> {
+                activity.startActivity(activityPair.second)
+                activity.overridePendingTransition(0, 0)
+                activity.finish()
+                activity.overridePendingTransition(0, 0)
+            }
+        }
+
         retryCount += 1
     }
 
@@ -99,17 +106,18 @@ object FireCrasher {
     }
 
     private fun restartApp(activityPair: Pair<Activity?, Intent?>) {
-        val packageName = activityPair.first?.baseContext?.packageName
-        if (packageName != null) {
-            val intent = activityPair.first?.baseContext?.packageManager
-                    ?.getLaunchIntentForPackage(packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                activityPair.first?.startActivity(intent)
-            }
-            activityPair.first?.overridePendingTransition(0, 0)
-            activityPair.first?.finish()
-            activityPair.first?.overridePendingTransition(0, 0)
+        val activity = activityPair.first ?: return
+        val packageName = activity.baseContext.packageName
+
+        activity.baseContext.packageManager.getLaunchIntentForPackage(packageName)?.let { intent ->
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            activity.startActivity(intent)
+        }
+
+        with(activity) {
+            overridePendingTransition(0, 0)
+            finish()
+            overridePendingTransition(0, 0)
         }
     }
 }

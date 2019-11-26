@@ -3,90 +3,68 @@ package com.osama.firecrasher
 import android.annotation.SuppressLint
 import android.os.*
 import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
 class FireLooper : Runnable {
 
+    @SuppressLint("DiscouragedPrivateApi")
     override fun run() {
-        if (FIRE_LOOPER_THREAD_LOCAL!!.get() != null)
-            return
+        if (FIRE_LOOPER_THREAD_LOCAL.get() != null) return
 
         val next: Method
         val target: Field
         try {
-            @SuppressLint("PrivateApi") val method = MessageQueue::class.java.getDeclaredMethod("next")
+            val method = MessageQueue::class.java.getDeclaredMethod("next")
             method.isAccessible = true
             next = method
             val field = Message::class.java.getDeclaredField("target")
             field.isAccessible = true
             target = field
-        } catch (e: Exception) {
+        } catch (exception: Throwable) {
             return
         }
 
-        FIRE_LOOPER_THREAD_LOCAL!!.set(this)
+        FIRE_LOOPER_THREAD_LOCAL.set(this)
+
         val queue = Looper.myQueue()
         Binder.clearCallingIdentity()
 
-        while (true) {
-            try {
-                val message = next.invoke(queue) as Message
-                if (message == null || message.obj === EXIT)
-                    break
+        while (true) try {
+            val message =
+                    next.invoke(queue)
+                            .takeIf { it is Message && it.obj != EXIT } as Message? ?: break
 
-                val handler = target.get(message) as Handler
-                handler.dispatchMessage(message)
+            val handler = target.get(message) as? Handler ?: break
+            handler.dispatchMessage(message)
 
-                Binder.clearCallingIdentity()
+            Binder.clearCallingIdentity()
 
-                val currentVersion = android.os.Build.VERSION.SDK_INT
-                if (currentVersion < android.os.Build.VERSION_CODES.LOLLIPOP)
-                    message.recycle()
-            } catch (exception: InvocationTargetException) {
-                val exceptionHandler = uncaughtExceptionHandler
-                var throwable: Throwable?
-                throwable = exception.cause
-                if (throwable == null) throwable = exception
-
-                exceptionHandler?.uncaughtException(Thread.currentThread(), throwable)
-
-                Handler().post(this)
-                break
-            } catch (e: Exception) {
-                val exceptionHandler = uncaughtExceptionHandler
-                exceptionHandler?.uncaughtException(Thread.currentThread(), e)
-                Handler().post(this)
-                break
-            }
-
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) message.recycle()
+        } catch (exception: Throwable) {
+            uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), exception.cause
+                    ?: exception)
+            Handler().post(this)
+            break
         }
 
-        FIRE_LOOPER_THREAD_LOCAL!!.set(null)
+        FIRE_LOOPER_THREAD_LOCAL.set(null)
     }
 
     companion object {
-        private var EXIT: Any? = null
-        private var FIRE_LOOPER_THREAD_LOCAL: ThreadLocal<FireLooper>? = null
+        private var EXIT = Any()
+        private var FIRE_LOOPER_THREAD_LOCAL: ThreadLocal<FireLooper> = ThreadLocal()
         private var uncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
-        private var handler: Handler? = null
-
-        init {
-            EXIT = Any()
-            FIRE_LOOPER_THREAD_LOCAL = ThreadLocal()
-            handler = Handler(Looper.getMainLooper())
-        }
+        private var handler: Handler = Handler(Looper.getMainLooper())
 
         internal fun install() {
-            handler!!.removeMessages(0, EXIT)
-            handler!!.post(FireLooper())
+            handler.removeMessages(0, EXIT)
+            handler.post(FireLooper())
         }
 
         internal val isSafe: Boolean
-            get() = FIRE_LOOPER_THREAD_LOCAL!!.get() != null
+            get() = FIRE_LOOPER_THREAD_LOCAL.get() != null
 
-        internal fun setUncaughtExceptionHandler(
-                h: Thread.UncaughtExceptionHandler) {
+        internal fun setUncaughtExceptionHandler(h: Thread.UncaughtExceptionHandler) {
             uncaughtExceptionHandler = h
         }
     }
