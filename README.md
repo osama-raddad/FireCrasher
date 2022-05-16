@@ -94,7 +94,7 @@ class App : Application() {
 }
 ```
 
-to detarmein the crash level before srating the recovery you can use:
+to detarmein the crash level before starting the recovery you can use:
 ```kotlin
        FireCrasher.install(this, object : CrashListener() {
 
