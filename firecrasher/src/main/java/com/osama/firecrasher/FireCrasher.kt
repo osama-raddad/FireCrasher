@@ -24,24 +24,105 @@ public object FireCrasher {
 
     private var application: Application? = null
 
+    private var config: FireCrasherConfig = FireCrasherConfig.DEFAULT
+
     private val crashHandler: CrashHandler by lazy { CrashHandler() }
 
     public fun install(application: Application, crashListener: CrashListener) {
+        install(application, FireCrasherConfig.DEFAULT, crashListener)
+    }
+
+    /**
+     * Install with a lambda instead of a [CrashListener] subclass. The lambda
+     * receives a [CrashEvent] carrying the throwable plus the crash context
+     * (thread, activity, retry count, suggested level) and starts recovery via
+     * [CrashEvent.recover]. Use the [CrashListener] overloads when you also
+     * need [CrashListener.onPreviousProcessExit].
+     */
+    public fun install(
+        application: Application,
+        config: FireCrasherConfig = FireCrasherConfig.DEFAULT,
+        onCrash: (CrashEvent) -> Unit,
+    ) {
+        install(application, config, asListener(onCrash))
+    }
+
+    public fun install(
+        application: Application,
+        config: FireCrasherConfig,
+        crashListener: CrashListener,
+    ) {
+        install(application, config, crashListener, hookMainLooper = true)
+    }
+
+    // hookMainLooper=false is a test seam: FireLooper's replacement loop blocks
+    // in MessageQueue.next() by design (it replaces Looper.loop()), which under
+    // Robolectric would park the sandbox main thread forever.
+    internal fun install(
+        application: Application,
+        config: FireCrasherConfig,
+        crashListener: CrashListener,
+        hookMainLooper: Boolean,
+    ) {
         if (FireLooper.isSafe) return
         this.application = application
+        this.config = config
         crashHandler.setCrashListener(crashListener)
+        crashHandler.setConfig(config)
+        // Capture whatever handler was installed before us (a crash reporter's,
+        // or the framework's) so non-recovered crashes still reach it instead
+        // of being silently clobbered. Guard against a repeated install
+        // capturing FireCrasher itself.
+        val currentDefault = Thread.getDefaultUncaughtExceptionHandler()
+        if (currentDefault !== crashHandler) {
+            crashHandler.setPreviousDefaultHandler(currentDefault)
+        }
         application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
         restorePreviousRecoveryState(application, crashListener)
-        FireLooper.install()
+        if (hookMainLooper) FireLooper.install()
         FireLooper.setUncaughtExceptionHandler(crashHandler)
         Thread.setDefaultUncaughtExceptionHandler(crashHandler)
     }
 
-    public fun evaluate(): CrashLevel = evaluate(retryCount, crashHandler.backStackCount)
+    internal fun asListener(onCrash: (CrashEvent) -> Unit): CrashListener =
+        object : CrashListener() {
+            override fun onCrash(throwable: Throwable) {
+                onCrash(buildCrashEvent(throwable))
+            }
+        }
 
-    internal fun evaluate(retryCount: Int, backStackCount: Int): CrashLevel {
+    /**
+     * Undo [install]: restore the uncaught-exception handler that was the
+     * process default before FireCrasher, stop the exception-surviving main
+     * loop at its next message, and stop tracking activities. Subsequent
+     * crashes behave as if FireCrasher was never installed. Safe to call when
+     * not installed; [install] may be called again afterwards.
+     *
+     * Do not call from inside [CrashListener.onCrash] — the crash being
+     * handled still needs the recovery machinery.
+     */
+    public fun uninstall() {
+        application?.unregisterActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
+        if (Thread.getDefaultUncaughtExceptionHandler() === crashHandler) {
+            Thread.setDefaultUncaughtExceptionHandler(crashHandler.previousDefaultHandler)
+        }
+        FireLooper.uninstall()
+        retryCount = 0
+        config = FireCrasherConfig.DEFAULT
+        application = null
+        crashHandler.reset()
+    }
+
+    public fun evaluate(): CrashLevel =
+        evaluate(retryCount, currentBackStackDepth(), config.levelOneRetries)
+
+    internal fun evaluate(
+        retryCount: Int,
+        backStackCount: Int,
+        levelOneRetries: Int = FireCrasherConfig.DEFAULT.levelOneRetries,
+    ): CrashLevel {
         return when {
-            retryCount <= 1 ->
+            retryCount < levelOneRetries ->
                 //try to restart the failing activity
                 CrashLevel.LEVEL_ONE
             backStackCount >= 1 ->
@@ -53,11 +134,22 @@ public object FireCrasher {
         }
     }
 
+    private fun currentBackStackDepth(): Int =
+        config.backStackDepthProvider?.getDepth() ?: crashHandler.backStackCount
+
+    internal fun buildCrashEvent(throwable: Throwable): CrashEvent = CrashEvent(
+        throwable = throwable,
+        thread = crashHandler.crashedThread ?: Thread.currentThread(),
+        activity = crashHandler.activity,
+        retryCount = retryCount,
+        suggestedLevel = evaluate(),
+    )
+
     public fun evaluateAsync(onEvaluate: ((activity: Activity?, level: CrashLevel) -> Unit)?) {
         onEvaluate?.invoke(crashHandler.activity, evaluate())
     }
 
-    public fun recover(level: CrashLevel = evaluate(), onRecover: ((activity: Activity?) -> Unit)?) {
+    public fun recover(level: CrashLevel = evaluate(), onRecover: ((activity: Activity?) -> Unit)? = null) {
         val activityPair = getActivityPair()
         val retryCountAtCrash = retryCount
         when (level) {
@@ -204,7 +296,10 @@ public object FireCrasher {
     }
 
     internal fun resetForTest() {
+        application?.unregisterActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
         retryCount = 0
         application = null
+        config = FireCrasherConfig.DEFAULT
+        crashHandler.reset()
     }
 }
