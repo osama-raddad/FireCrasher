@@ -1,149 +1,206 @@
 <p align="center">
-<img src='https://cdn-images-1.medium.com/max/2600/1*7CVLni2XSYNFzy7dRHLtsQ.png'/>
+  <img src="https://cdn-images-1.medium.com/max/2600/1*7CVLni2XSYNFzy7dRHLtsQ.png" alt="FireCrasher"/>
 </p>
+
+<h1 align="center">FireCrasher</h1>
+
 <p align="center">
- <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"/></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"/></a>
+  <b>Catch uncaught Android exceptions and recover — instead of crashing to the launcher.</b>
 </p>
+
 <p align="center">
-<a href='https://ko-fi.com/A4763RZL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+  <a href="https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml"><img src="https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml/badge.svg" alt="Build Status"/></a>
+  <a href="https://jitpack.io/#osama-raddad/FireCrasher"><img src="https://jitpack.io/v/osama-raddad/FireCrasher.svg" alt="JitPack"/></a>
+  <a href="https://android-arsenal.com/api?level=23"><img src="https://img.shields.io/badge/API-23%2B-blue.svg?style=flat" alt="API 23+"/></a>
+  <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License Apache 2.0"/></a>
 </p>
 
-</p>
-<p align="center">
-<a href='https://www.codacy.com/app/osama-s-raddad/FireCrasher?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osama-raddad/FireCrasher&amp;utm_campaign=Badge_Grade' target='_blank'><img src='https://api.codacy.com/project/badge/Grade/4da668c9125b401babee42dbb9283f22' border='0' alt='Codacy Badge' /></a>
-</p>
+---
 
-</p>
-<p align="center">
-<a href='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml' target='_blank'><img src='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml/badge.svg' alt='Build Status' /></a>
-</p>
+## Contents
 
-[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-23%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=23) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+- [What it does](#what-it-does)
+- [How recovery works](#how-recovery-works)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Usage](#usage)
+  - [Report crashes while recovering](#report-crashes-while-recovering)
+  - [React to the crash level](#react-to-the-crash-level)
+  - [Detect native crashes and ANRs (API 30+)](#detect-native-crashes-and-anrs-api-30)
+- [API reference](#api-reference)
+- [What's new in 2.1.0](#whats-new-in-210)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
+## What it does
 
-# FireCrasher
+An uncaught exception on Android's main thread tears down the whole process:
+the app disappears and the user is dropped back at the launcher. Crashing is one
+of the fastest ways to lose a user — a large share will one-star or delete an
+app after a single bad crash.
 
-FireCrasher is designed to handle the uncaught exceptions and utilize a RECOVERY process from the Exception 
-Without exiting from the application.
+Most production crashes, though, are **localized and transient**: a bad state on
+one screen, a null from a flaky response, a race that fires once. FireCrasher's
+premise is that the app should *absorb* that exception and get the user back to a
+working state rather than die.
 
-## The Problem
+It does this by replacing the main-thread message loop with one that dispatches
+messages inside a `try/catch`. When something throws, FireCrasher hands the
+exception to your `CrashListener` and runs a staged recovery — so the crash
+becomes a hiccup, not an exit. **Your crash reporting still fires**; the app
+just stays alive while it reports.
 
-"The study, carried out online by uSamp, found that freezing (76%), crashing (71%) and slow responsiveness (59%) were the primary bugbears when it came to app problems, with heavy battery usage (55%) and too many ads (53%) also mentioned. Users stressed that performance mattered the most on banking apps (74%) and maps (63%), with the latter no doubt much to the chagrin of Apple, which has had some difficulty with its own maps software on iOS 6. For almost every respondent (96%) said that they would write a bad review on an under-par app, while 44% said that they would delete the app immediately. Another 38% said that they would delete the app if it froze for more than 30 seconds with 32% and 21% respectively indicating that they would moan about the app to their friends or colleagues in person or over Facebook and Twitter. A considerable 18% would delete an app immediately if it froze for just five seconds, but 27% said that they would persist with the app if they paid for it. Those experiencing bad apps urged developers to fix the problem (89%) first and foremost, followed by offering easy refunds (65%) and a customer service number (49%)."
+## How recovery works
 
-## The Solution
+When a crash is caught, FireCrasher picks a recovery level based on how many
+times it has already tried and whether there's a screen to fall back to:
 
-Every developer knows that shit happens, and at some point you will ship a random exception to the production code (application) thus you might risk losing a 44% of the affected users, this where Firecrasher comes in, it utilizes a recovery sequence to limit and chicaneries the crash consequences on three different levels; the first level is the random behavioral crash (occasional crash) that would be solved with just restarting the crashed activity if the restarted activity kept crashing for three consecutive times, the second level of the sequence will start executing at this stage the crashed is considered dead and the library checks if there are other activities in the backstack it invokes the onBackPressed() if there are no activities in the backstack then level three takes effect in restarting the whole application from the default activity. Moreover, it works without losing any crash reports.
+| Level | When | What happens |
+|-------|------|--------------|
+| **LEVEL&nbsp;ONE** | First one or two crashes (`retryCount ≤ 1`) | Restart the crashing activity (`recreate()`, then relaunch-and-finish). Treats it as an occasional glitch. |
+| **LEVEL&nbsp;TWO** | The activity keeps crashing **and** there's a back stack | Give up on the dead screen and go back to the previous one (predictive-back aware). |
+| **LEVEL&nbsp;THREE** | Keeps crashing with nothing to go back to | Restart the whole app from its launcher activity. |
+
+Recovery escalates cheaply first and only gets more disruptive once the cheaper
+options have demonstrably failed. On API 30+ the current level even survives
+process death, so a crash *during* recovery escalates instead of looping the
+same broken screen. See [CONTEXT.md](CONTEXT.md) for the full design rationale.
 
 ## Requirements
 
-- Min SDK version 23 (raised from 21 in 2.1.0 by the androidx.activity dependency)
-- Consuming projects need a toolchain that accepts Java 21 bytecode and Kotlin 2.2 metadata (AGP 8.2+ / Kotlin 2.1+)
-- FireCrasher contains no native code, so it adds no 16 KB page-size alignment concerns
+- **minSdk 23+** (raised from 21 in 2.1.0 by the `androidx.activity` dependency).
+- A toolchain that accepts **Java 21 bytecode and Kotlin 2.1+ metadata** —
+  AGP 8.2+ / Kotlin 2.1+.
+- No native code, so **no 16 KB page-size alignment concerns**.
 
-## What's new in 2.1.0
+## Installation
 
-- **Predictive back compatible recovery.** Level-two recovery now goes through
-  `OnBackPressedDispatcher` when the crashed activity is a `ComponentActivity`,
-  so the recovery chain keeps working in apps that target Android 16 (API 36),
-  where the system no longer calls `Activity.onBackPressed()`. Plain framework
-  activities still get the legacy call.
-- **Crash reports beyond the JVM.** On API 30+ FireCrasher reads the system's
-  [`ApplicationExitInfo`](https://developer.android.com/reference/android/app/ApplicationExitInfo)
-  records, surfacing native crashes and ANRs that an in-process handler can
-  never intercept — see `CrashListener.onPreviousProcessExit` and
-  `FireCrasher.getLastAbnormalExit` below.
-- **Restart-loop protection.** On API 30+ the current recovery level survives
-  process death (via `ActivityManager.setProcessStateSummary`), so a crash
-  during recovery escalates instead of looping the same crashing activity.
-- **Locked-down API surface.** The library is compiled in Kotlin explicit API
-  mode and every change is checked against a committed ABI baseline
-  (`firecrasher/api/firecrasher.api`) in CI.
+**1. Add the JitPack repository** in `settings.gradle`:
 
-
-## Install
-Add it in your root build.gradle at the end of repositories:
-
-```groove
-	allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
-	}
-```
-Step 2. Add the dependency
-
-```groove
-	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:2.1.0'
-	}
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
 ```
 
-## Usage
+**2. Add the dependency** in your app module's `build.gradle`:
 
-to use the library add this code to Application class :
+```groovy
+dependencies {
+    implementation 'com.github.osama-raddad:FireCrasher:2.1.0'
+}
+```
+
+## Quick start
+
+Install FireCrasher in your `Application.onCreate` — before any activity is
+created — and start recovery from `onCrash`:
 
 ```kotlin
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
         FireCrasher.install(this, object : CrashListener() {
-
             override fun onCrash(throwable: Throwable) {
-                Toast.makeText(this@App, throwable.message, Toast.LENGTH_SHORT).show()
-                // start the recovering process
                 recover()
-                //you need to add your crash reporting tool here
-                //Ex: Crashlytics.logException(throwable);
             }
         })
     }
 }
 ```
 
-to detarmein the crash level before starting the recovery you can use:
-```kotlin
-       FireCrasher.install(this, object : CrashListener() {
+Register the Application in your manifest if it isn't already:
 
-            override fun onCrash(throwable: Throwable) {
-
-                evaluate { activity, crashLevel ->
-                     recover {
-                                Toast.makeText(this@App, "recover", Toast.LENGTH_LONG).show()
-                            }
-                	}
-                
-                //you need to add your crash reporting tool here
-                //Ex: Crashlytics.logException(throwable);
-            }
-        })
+```xml
+<application android:name=".App" ... />
 ```
 
-### Detecting crashes the handler cannot catch (API 30+)
+That's it — uncaught main-thread exceptions now trigger recovery instead of
+killing the app.
 
-Native crashes, ANRs, and low-memory kills terminate the process before any
-in-process handler runs. On the next launch FireCrasher reports the system's
-record of such deaths through an optional `CrashListener` callback:
+## Usage
+
+### Report crashes while recovering
+
+`onCrash` hands you the `Throwable` before recovery runs. Report it **first**
+(so nothing is lost if a later recovery attempt struggles), then recover.
+Because the app survives, these reach your reporter as *non-fatal / handled*
+exceptions.
 
 ```kotlin
 FireCrasher.install(this, object : CrashListener() {
+    override fun onCrash(throwable: Throwable) {
+        FirebaseCrashlytics.getInstance().recordException(throwable)   // or Sentry, Bugsnag, …
+        recover()
+    }
+})
+```
 
+### React to the crash level
+
+Use `evaluate { activity, level -> … }` to inspect the level FireCrasher would
+use and show your own recovery UX, then call `recover { … }`:
+
+```kotlin
+FireCrasher.install(this, object : CrashListener() {
+    override fun onCrash(throwable: Throwable) {
+        report(throwable)
+
+        evaluate { activity, level ->
+            val context = activity ?: return@evaluate
+            recover {
+                val message = when (level) {
+                    CrashLevel.LEVEL_ONE   -> "Recovering…"
+                    CrashLevel.LEVEL_TWO   -> "Returning to the previous screen"
+                    CrashLevel.LEVEL_THREE -> "Restarting the app"
+                }
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+})
+```
+
+You can also force a specific level: `recover(CrashLevel.LEVEL_THREE)`.
+
+> **Tip:** keep recovery UX fast and non-blocking — the user just hit a crash, so
+> a brief spinner or toast beats a modal dialog. Do the reporting before showing UX.
+
+### Detect native crashes and ANRs (API 30+)
+
+Native crashes, ANRs, and low-memory kills terminate the process before any
+in-process handler can run, so `onCrash` never sees them. On **API 30+**,
+FireCrasher surfaces the system's own `ApplicationExitInfo` record of such
+deaths on the next launch.
+
+Override `onPreviousProcessExit`, called from `install()` when the last process
+died abnormally:
+
+```kotlin
+FireCrasher.install(this, object : CrashListener() {
     override fun onCrash(throwable: Throwable) {
         recover()
     }
 
     override fun onPreviousProcessExit(exitInfo: ApplicationExitInfo) {
-        // The record may be from an older session; check exitInfo.timestamp.
-        // Ex: Crashlytics.log("previous exit: ${exitInfo.reason} ${exitInfo.description}")
+        // The record may predate the last launch — check exitInfo.timestamp.
+        FirebaseCrashlytics.getInstance()
+            .log("previous exit: ${exitInfo.reason} ${exitInfo.description}")
     }
 })
 ```
 
-You can also query the records directly, from Kotlin or Java:
+Or query the records directly, from Kotlin or Java:
 
 ```kotlin
-val lastCrash = FireCrasher.getLastAbnormalExit(context)          // or null
-val history = FireCrasher.getHistoricalExitReasons(context, 16)  // newest first
+val lastCrash = FireCrasher.getLastAbnormalExit(context)          // most recent crash/native/ANR, or null
+val history   = FireCrasher.getHistoricalExitReasons(context, 16) // newest first
 ```
 
 ```java
@@ -151,29 +208,88 @@ ApplicationExitInfo lastCrash = FireCrasher.getLastAbnormalExit(context);
 List<ApplicationExitInfo> history = FireCrasher.getHistoricalExitReasons(context);
 ```
 
-Both return empty/null below API 30.
+Both return empty/null below API 30, so no version guard is needed in your code.
+The same record persists across launches — de-duplicate on `exitInfo.timestamp`
+so you don't report the same death twice.
+
+## API reference
+
+Everything lives in the `com.osama.firecrasher` package.
+
+### `FireCrasher` (object)
+
+| Member | Description |
+|--------|-------------|
+| `install(application, listener)` | Hook the main loop and activity lifecycle. Call once, in `Application.onCreate`. |
+| `retryCount: Int` | How many times recovery has retried the current crash (read-only). |
+| `evaluate(): CrashLevel` | The level recovery would use right now. |
+| `recover(level = evaluate(), onRecover)` | Run recovery, optionally at a forced level, with a callback after it starts. |
+| `getLastAbnormalExit(context)` | Most recent crash / native crash / ANR exit record, or `null`. API 30+. |
+| `getHistoricalExitReasons(context, maxCount = 16)` | Past process exits, newest first. API 30+. |
+
+### `CrashListener` (abstract — you implement it)
+
+| Member | Description |
+|--------|-------------|
+| `onCrash(throwable)` | **Required.** Called on the main thread when an exception is caught. Report and call `recover()` here. |
+| `onPreviousProcessExit(exitInfo)` | Optional. Called from `install()` on API 30+ when the previous process died abnormally. |
+| `recover(…)` / `evaluate(…)` | Protected helpers to start recovery / inspect the crash level from inside the listener. |
+
+### `CrashLevel` (enum)
+
+`LEVEL_ONE` · `LEVEL_TWO` · `LEVEL_THREE` — the recovery escalation ladder
+described [above](#how-recovery-works).
+
+## What's new in 2.1.0
+
+- **Predictive-back compatible recovery.** LEVEL_TWO recovery goes through
+  `OnBackPressedDispatcher` when the crashed activity is a `ComponentActivity`,
+  so the recovery chain keeps working on apps targeting Android 16 (API 36),
+  where the system no longer calls `Activity.onBackPressed()`. Plain framework
+  activities still get the legacy call.
+- **Crash reports beyond the JVM.** On API 30+ FireCrasher reads the system's
+  [`ApplicationExitInfo`](https://developer.android.com/reference/android/app/ApplicationExitInfo)
+  records, surfacing native crashes and ANRs an in-process handler can never
+  intercept — via `onPreviousProcessExit` and `getLastAbnormalExit`.
+- **Restart-loop protection.** On API 30+ the current recovery level survives
+  process death (`ActivityManager.setProcessStateSummary`), so a crash during
+  recovery escalates instead of looping the same crashing activity.
+- **Locked-down API surface.** The library is compiled in Kotlin explicit-API
+  mode and every change is checked against a committed ABI baseline
+  (`firecrasher/api/firecrasher.api`) in CI.
+- **minSdk raised to 23** (from 21) by the `androidx.activity` dependency.
+
+## Documentation
+
+- **[CONTEXT.md](CONTEXT.md)** — design rationale: why the message-loop
+  replacement, the recovery ladder, and cross-process recovery state.
+- **[AGENTS.md](AGENTS.md)** — repository guide for contributors and AI agents.
+- **[docs/skills/](docs/skills/)** — drop-in agent skills for integrating
+  FireCrasher into your own app.
 
 ## Contributing
 
-We welcome contributions to FireCrasher!
-* ⇄ Pull requests and ★ Stars are always welcome.
+Pull requests and stars are always welcome. When changing the library's public
+API, regenerate the ABI baseline (`./gradlew :firecrasher:apiDump`) and commit
+it with your change — see [AGENTS.md](AGENTS.md) for the full workflow.
 
-### Let me know!
-
-I’d be really happy if you sent me links to your projects where you use my library. Just send an email to osama.s.raddad@gmail.com And do let me know if you have any questions or suggestion regarding the library. 
+I'd also love to hear where you're using FireCrasher — email
+osama.s.raddad@gmail.com with questions or suggestions.
 
 ## License
 
-    Copyright 2019, Osama Raddad
+```
+Copyright 2019, Osama Raddad
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
