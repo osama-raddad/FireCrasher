@@ -17,16 +17,14 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:onClick="crash"
-        android:text="Crash" />
+        android:text="@string/crash" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:onClick="next"
-        android:text="next" />
+        android:text="@string/next" />
 </RelativeLayout>

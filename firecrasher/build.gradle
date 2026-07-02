@@ -1,47 +1,138 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-android'
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'fire-crasher'
-
-    publishedGroupId = 'com.osama.firecrasher'
-    libraryName = 'firecrasher'
-    artifact = 'firecrasher'
-
-    libraryDescription = 'a android crash handler'
-
-    siteUrl = 'https://github.com/osama-raddad/FireCrasher'
-    gitUrl = 'https://github.com/osama-raddad/FireCrasher.git'
-
-    libraryVersion = '1.5.12'
-
-    developerId = 'osama-raddad'
-    developerName = 'osama raddad'
-    developerEmail = 'osama.s.raddad@gmail.com'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
+plugins {
+    alias(libs.plugins.android.library)
+    id 'maven-publish'
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 android {
-    compileSdkVersion 28
+    namespace = 'com.osama.firecrasher'
+    compileSdk = 36
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 14
-        versionName "2.0.0"
+        // androidx.activity 1.12+ (OnBackPressedDispatcher) requires minSdk 23.
+        minSdk = 23
+        targetSdk = 36
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        // Java 21 is Android's bytecode ceiling (D8 does not dex class files
+        // newer than 65). Consumers need AGP 8.2+ to dex this library.
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    lint {
+        abortOnError = true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+kotlin {
+    // Public declarations must carry explicit visibility and return types,
+    // so nothing leaks into the published API surface by accident.
+    explicitApi()
+}
+
+dependencies {
+    implementation libs.androidx.activity
+
+    testImplementation libs.junit
+    testImplementation libs.robolectric
+    testImplementation libs.androidx.test.core
+}
+
+// AARs and source jars are consumed by checksum; keep their bytes stable
+// across rebuilds of the same sources.
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+// The binary-compatibility-validator plugin only activates for the standalone
+// Kotlin plugins, not AGP's built-in Kotlin, so its dump/compare tasks are
+// wired to the release compile outputs by hand. The committed baseline lives
+// in api/firecrasher.api; run apiDump after intentional API changes.
+configurations {
+    // Worker classpath for the manually wired binary-compatibility-validator
+    // tasks; matches the metadata library of the built-in Kotlin version.
+    bcvRuntime {
+        canBeConsumed = false
     }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    bcvRuntime libs.kotlin.metadata.jvm
+}
+
+def apiBuild = tasks.register('apiBuild', kotlinx.validation.KotlinApiBuildTask) {
+    inputClassesDirs.from(
+            tasks.named('compileReleaseKotlin').map { it.outputs.files },
+            tasks.named('compileReleaseJavaWithJavac').map { it.outputs.files },
+    )
+    outputApiFile = layout.buildDirectory.file('api/firecrasher.api')
+    runtimeClasspath.from(configurations.bcvRuntime)
+}
+
+def apiCheck = tasks.register('apiCheck', kotlinx.validation.KotlinApiCompareTask) {
+    projectApiFile = layout.projectDirectory.file('api/firecrasher.api')
+    generatedApiFile = apiBuild.flatMap { it.outputApiFile }
+}
+
+tasks.register('apiDump', Copy) {
+    from apiBuild.flatMap { it.outputApiFile }
+    into layout.projectDirectory.dir('api')
+}
+
+tasks.named('check') {
+    dependsOn apiCheck
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                // JitPack remaps these coordinates to the requested
+                // com.github.<user> group and git-tag version when it builds.
+                groupId = 'com.osama.firecrasher'
+                artifactId = 'firecrasher'
+                version = project.findProperty('VERSION_NAME') ?: '2.1.0'
+
+                pom {
+                    name = 'firecrasher'
+                    description = 'An Android crash handling and recovery library'
+                    url = 'https://github.com/osama-raddad/FireCrasher'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'osama-raddad'
+                            name = 'osama raddad'
+                            email = 'osama.s.raddad@gmail.com'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/osama-raddad/FireCrasher'
+                        connection = 'scm:git:https://github.com/osama-raddad/FireCrasher.git'
+                    }
+                }
+            }
+        }
+    }
 }
