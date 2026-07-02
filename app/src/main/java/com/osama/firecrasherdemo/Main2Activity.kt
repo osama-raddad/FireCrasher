@@ -2,8 +2,8 @@ package com.osama.firecrasherdemo
 
 import android.os.Bundle
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main2.*
+import android.os.Looper
+import androidx.appcompat.app.AppCompatActivity
 
 class Main2Activity : AppCompatActivity() {
 
@@ -15,7 +15,7 @@ class Main2Activity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             this.runOnUiThread {
                 throw Exception("Osama ex")
             }

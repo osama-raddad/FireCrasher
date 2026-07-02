@@ -1,11 +1,7 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 
 ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'fire-crasher'
-
     publishedGroupId = 'com.osama.firecrasher'
     libraryName = 'firecrasher'
     artifact = 'firecrasher'
@@ -27,18 +23,21 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    namespace 'com.osama.firecrasher'
+    compileSdk 34
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 14
-        versionName "2.0.0"
+        minSdk 21
+        targetSdk 34
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
