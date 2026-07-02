@@ -27,4 +27,22 @@
         android:layout_alignParentEnd="true"
         android:onClick="next"
         android:text="@string/next" />
+
+    <Button
+        android:id="@+id/buttonThrowError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button"
+        android:layout_centerHorizontal="true"
+        android:onClick="throwError"
+        android:text="@string/throw_error" />
+
+    <Button
+        android:id="@+id/buttonCrashLoop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/buttonThrowError"
+        android:layout_centerHorizontal="true"
+        android:onClick="crashLoop"
+        android:text="@string/crash_loop" />
 </RelativeLayout>

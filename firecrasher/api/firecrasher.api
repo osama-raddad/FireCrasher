@@ -1,3 +1,17 @@
+public abstract interface class com/osama/firecrasher/BackStackDepthProvider {
+	public abstract fun getDepth ()I
+}
+
+public final class com/osama/firecrasher/CrashEvent {
+	public final fun getActivity ()Landroid/app/Activity;
+	public final fun getRetryCount ()I
+	public final fun getSuggestedLevel ()Lcom/osama/firecrasher/CrashLevel;
+	public final fun getThread ()Ljava/lang/Thread;
+	public final fun getThrowable ()Ljava/lang/Throwable;
+	public final fun recover ()V
+	public final fun recover (Lcom/osama/firecrasher/CrashLevel;)V
+}
+
 public final class com/osama/firecrasher/CrashHandler : java/lang/Thread$UncaughtExceptionHandler {
 	public fun getActivity ()Landroid/app/Activity;
 	public fun getBackStackCount ()I
@@ -35,7 +49,39 @@ public final class com/osama/firecrasher/FireCrasher {
 	public static final fun getLastAbnormalExit (Landroid/content/Context;)Landroid/app/ApplicationExitInfo;
 	public final fun getRetryCount ()I
 	public final fun install (Landroid/app/Application;Lcom/osama/firecrasher/CrashListener;)V
+	public final fun install (Landroid/app/Application;Lcom/osama/firecrasher/FireCrasherConfig;Lcom/osama/firecrasher/CrashListener;)V
+	public final fun install (Landroid/app/Application;Lcom/osama/firecrasher/FireCrasherConfig;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun install$default (Lcom/osama/firecrasher/FireCrasher;Landroid/app/Application;Lcom/osama/firecrasher/FireCrasherConfig;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun recover (Lcom/osama/firecrasher/CrashLevel;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun recover$default (Lcom/osama/firecrasher/FireCrasher;Lcom/osama/firecrasher/CrashLevel;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun uninstall ()V
+}
+
+public final class com/osama/firecrasher/FireCrasherConfig {
+	public static final field Companion Lcom/osama/firecrasher/FireCrasherConfig$Companion;
+	public static final field DEFAULT Lcom/osama/firecrasher/FireCrasherConfig;
+	public synthetic fun <init> (ILcom/osama/firecrasher/RecoveryPredicate;IJLcom/osama/firecrasher/BackStackDepthProvider;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBackStackDepthProvider ()Lcom/osama/firecrasher/BackStackDepthProvider;
+	public final fun getCrashLoopThreshold ()I
+	public final fun getCrashLoopWindowMillis ()J
+	public final fun getLevelOneRetries ()I
+	public final fun getShouldRecover ()Lcom/osama/firecrasher/RecoveryPredicate;
+}
+
+public final class com/osama/firecrasher/FireCrasherConfig$Builder {
+	public fun <init> ()V
+	public final fun build ()Lcom/osama/firecrasher/FireCrasherConfig;
+	public final fun disableCrashLoopBreaker ()Lcom/osama/firecrasher/FireCrasherConfig$Builder;
+	public final fun setBackStackDepthProvider (Lcom/osama/firecrasher/BackStackDepthProvider;)Lcom/osama/firecrasher/FireCrasherConfig$Builder;
+	public final fun setCrashLoopBreaker (IJ)Lcom/osama/firecrasher/FireCrasherConfig$Builder;
+	public final fun setLevelOneRetries (I)Lcom/osama/firecrasher/FireCrasherConfig$Builder;
+	public final fun setShouldRecover (Lcom/osama/firecrasher/RecoveryPredicate;)Lcom/osama/firecrasher/FireCrasherConfig$Builder;
+}
+
+public final class com/osama/firecrasher/FireCrasherConfig$Companion {
+}
+
+public abstract interface class com/osama/firecrasher/RecoveryPredicate {
+	public abstract fun shouldRecover (Ljava/lang/Throwable;)Z
 }
 

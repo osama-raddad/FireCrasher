@@ -30,9 +30,14 @@ internal class FireLooper : Runnable {
         Binder.clearCallingIdentity()
 
         while (true) try {
-            val message =
-                    next.invoke(queue)
-                            .takeIf { it is Message && it.obj != EXIT } as Message? ?: break
+            val message = next.invoke(queue) as Message? ?: break
+
+            // The EXIT sentinel is posted by uninstall(): leave the loop and
+            // fall back to the framework's Looper.loop(). The message is
+            // dropped, not recycled — Message.recycle() throws on in-use
+            // messages and recycleUnchecked() is hidden; losing one message
+            // object on uninstall is harmless.
+            if (message.obj === EXIT) break
 
             val handler = target.get(message) as? Handler ?: break
             handler.dispatchMessage(message)
@@ -55,8 +60,18 @@ internal class FireLooper : Runnable {
         private var handler: Handler = Handler(Looper.getMainLooper())
 
         internal fun install() {
+            // Drop any EXIT still queued from an uninstall() so it cannot
+            // immediately shut the fresh loop down.
             handler.removeMessages(0, EXIT)
             handler.post(FireLooper())
+        }
+
+        // Ask the running loop to exit at its next queue poll; the framework's
+        // own Looper.loop() takes over from there. No-op if the loop is not
+        // running: the sentinel is consumed by the plain Handler and ignored.
+        internal fun uninstall() {
+            uncaughtExceptionHandler = null
+            handler.sendMessage(handler.obtainMessage(0, EXIT))
         }
 
         internal val isSafe: Boolean

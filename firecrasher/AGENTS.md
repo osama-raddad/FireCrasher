@@ -33,7 +33,7 @@ editing the library.
 - **Reproducible archives** (`preserveFileTimestamps = false`,
   `reproducibleFileOrder = true`) — JitPack consumes AARs by checksum. Keep it.
 - **Version bumps** must keep `VERSION_NAME` (in `build.gradle`, currently
-  `2.1.0`), the ABI baseline, and the README version in sync.
+  `2.2.0`), the ABI baseline, and the README version in sync.
 
 ## Tests (`src/test/java/...`)
 
