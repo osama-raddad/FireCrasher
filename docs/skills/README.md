@@ -26,5 +26,5 @@ cp -r docs/skills/{install-firecrasher,report-crashes,customize-recovery,detect-
 | `customize-recovery` | Inspect the crash level and show your own recovery UX. |
 | `detect-native-crashes-and-anrs` | Report native crashes / ANRs the in-process handler can't catch (API 30+). |
 
-All snippets target the public API of FireCrasher **2.1.0** (minSdk 23). See the
+All snippets target the public API of FireCrasher **2.2.0** (minSdk 23). See the
 project [`README.md`](../../README.md) for the full reference.

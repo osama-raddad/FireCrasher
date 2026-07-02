@@ -3,4 +3,6 @@
     <string name="title_activity_main2">Main2Activity</string>
     <string name="crash">Crash</string>
     <string name="next">next</string>
+    <string name="throw_error">Throw Error (dies normally)</string>
+    <string name="crash_loop">Crash loop (trips the breaker)</string>
 </resources>

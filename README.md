@@ -26,9 +26,13 @@
 - [Quick start](#quick-start)
 - [Usage](#usage)
   - [Report crashes while recovering](#report-crashes-while-recovering)
+  - [Configure the recovery policy](#configure-the-recovery-policy)
   - [React to the crash level](#react-to-the-crash-level)
+  - [Single-activity and Jetpack Compose apps](#single-activity-and-jetpack-compose-apps)
   - [Detect native crashes and ANRs (API 30+)](#detect-native-crashes-and-anrs-api-30)
+  - [Turning FireCrasher off](#turning-firecrasher-off)
 - [API reference](#api-reference)
+- [What's new in 2.2.0](#whats-new-in-220)
 - [What's new in 2.1.0](#whats-new-in-210)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -93,26 +97,36 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.osama-raddad:FireCrasher:2.1.0'
+    implementation 'com.github.osama-raddad:FireCrasher:2.2.0'
 }
 ```
 
 ## Quick start
 
 Install FireCrasher in your `Application.onCreate` — before any activity is
-created — and start recovery from `onCrash`:
+created — and start recovery from the crash callback:
 
 ```kotlin
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        FireCrasher.install(this, object : CrashListener() {
-            override fun onCrash(throwable: Throwable) {
-                recover()
-            }
-        })
+        FireCrasher.install(this) { crash ->
+            crash.recover()
+        }
     }
 }
+```
+
+The lambda receives a [`CrashEvent`](#crashevent) with the throwable and its
+context (thread, activity, retry count, suggested level). The subclass form
+still works — use it when you also need `onPreviousProcessExit`:
+
+```kotlin
+FireCrasher.install(this, object : CrashListener() {
+    override fun onCrash(throwable: Throwable) {
+        recover()
+    }
+})
 ```
 
 Register the Application in your manifest if it isn't already:
@@ -134,13 +148,49 @@ Because the app survives, these reach your reporter as *non-fatal / handled*
 exceptions.
 
 ```kotlin
-FireCrasher.install(this, object : CrashListener() {
-    override fun onCrash(throwable: Throwable) {
-        FirebaseCrashlytics.getInstance().recordException(throwable)   // or Sentry, Bugsnag, …
-        recover()
-    }
-})
+FireCrasher.install(this) { crash ->
+    FirebaseCrashlytics.getInstance().recordException(crash.throwable)   // or Sentry, Bugsnag, …
+    crash.recover()
+}
 ```
+
+### Configure the recovery policy
+
+Pass a `FireCrasherConfig` to `install` to control how much FireCrasher
+retries, which throwables it recovers, and when it gives up:
+
+```kotlin
+val config = FireCrasherConfig.Builder()
+    // Restart the crashing activity this many times before escalating (default 2).
+    .setLevelOneRetries(2)
+    // Let JVM errors (OutOfMemoryError, StackOverflowError, …) kill the app
+    // normally instead of recovering. Default: recover everything.
+    .setShouldRecover { it !is Error }
+    // Stop recovering after 10 crashes within 60s — the app then dies exactly
+    // as it would without FireCrasher, and your crash reporter still gets the
+    // fatal. This is the default; disableCrashLoopBreaker() turns it off.
+    .setCrashLoopBreaker(10, 60_000L)
+    .build()
+
+FireCrasher.install(this, config) { crash ->
+    report(crash.throwable)
+    crash.recover()
+}
+```
+
+The same builder works from Java — `RecoveryPredicate` is a SAM interface:
+
+```java
+FireCrasherConfig config = new FireCrasherConfig.Builder()
+        .setShouldRecover(t -> !(t instanceof Error))
+        .build();
+FireCrasher.install(this, config, new CrashListener() { ... });
+```
+
+When recovery is declined — by `shouldRecover` or the crash-loop breaker — the
+exception goes to whatever `Thread.getDefaultUncaughtExceptionHandler()` was
+installed **before** FireCrasher (typically your crash reporter's), so fatals
+are reported exactly as they would be without FireCrasher.
 
 ### React to the crash level
 
@@ -171,6 +221,33 @@ You can also force a specific level: `recover(CrashLevel.LEVEL_THREE)`.
 
 > **Tip:** keep recovery UX fast and non-blocking — the user just hit a crash, so
 > a brief spinner or toast beats a modal dialog. Do the reporting before showing UX.
+
+### Single-activity and Jetpack Compose apps
+
+FireCrasher counts *activities* to decide whether there is somewhere to go
+back to (LEVEL_TWO). A single-activity app — the usual shape of a Jetpack
+Compose app — always reports zero depth, so the ladder would jump from
+restarting the activity straight to relaunching the whole app.
+
+Tell FireCrasher about your navigation stack instead with
+`setBackStackDepthProvider`. Going back is dispatched through
+`OnBackPressedDispatcher`, which Navigation Compose participates in — so
+LEVEL_TWO pops the crashed *destination* and keeps the rest of your app alive:
+
+```kotlin
+// Hold a reference your Application can reach, e.g. set from your activity:
+var navDepth: () -> Int = { 0 }
+
+val config = FireCrasherConfig.Builder()
+    .setBackStackDepthProvider { navDepth() }
+    .build()
+
+// In your composable host, keep it current:
+navDepth = { navController.previousBackStackEntry?.let { 1 } ?: 0 }
+```
+
+`install()` still belongs in `Application.onCreate` — nothing else is
+Compose-specific.
 
 ### Detect native crashes and ANRs (API 30+)
 
@@ -212,6 +289,22 @@ Both return empty/null below API 30, so no version guard is needed in your code.
 The same record persists across launches — de-duplicate on `exitInfo.timestamp`
 so you don't report the same death twice.
 
+### Turning FireCrasher off
+
+`uninstall()` undoes `install()`: the pre-install default exception handler is
+restored, the replacement main loop exits at its next message, and subsequent
+crashes behave as if FireCrasher was never there. Useful as a remote-config
+kill switch or for A/B-testing recovery:
+
+```kotlin
+if (!remoteConfig.getBoolean("firecrasher_enabled")) {
+    FireCrasher.uninstall()
+}
+```
+
+`install()` may be called again later. Don't call `uninstall()` from inside
+the crash callback itself.
+
 ## API reference
 
 Everything lives in the `com.osama.firecrasher` package.
@@ -220,12 +313,34 @@ Everything lives in the `com.osama.firecrasher` package.
 
 | Member | Description |
 |--------|-------------|
-| `install(application, listener)` | Hook the main loop and activity lifecycle. Call once, in `Application.onCreate`. |
+| `install(application) { crash -> … }` | Hook the main loop and activity lifecycle, with a [`CrashEvent`](#crashevent) lambda. Call once, in `Application.onCreate`. |
+| `install(application, config) { crash -> … }` | Same, with a [`FireCrasherConfig`](#firecrasherconfig). |
+| `install(application, [config,] listener)` | Subclass form; needed for `onPreviousProcessExit`. |
+| `uninstall()` | Undo `install()` — restore the previous handler and stop the replacement loop. |
 | `retryCount: Int` | How many times recovery has retried the current crash (read-only). |
 | `evaluate(): CrashLevel` | The level recovery would use right now. |
-| `recover(level = evaluate(), onRecover)` | Run recovery, optionally at a forced level, with a callback after it starts. |
+| `recover(level = evaluate(), onRecover = null)` | Run recovery, optionally at a forced level, with an optional callback after it starts. |
 | `getLastAbnormalExit(context)` | Most recent crash / native crash / ANR exit record, or `null`. API 30+. |
 | `getHistoricalExitReasons(context, maxCount = 16)` | Past process exits, newest first. API 30+. |
+
+### `FireCrasherConfig`
+
+Built with `FireCrasherConfig.Builder`; pass to `install`. `DEFAULT` preserves
+historical behavior except the crash-loop breaker, which defaults to on.
+
+| Builder method | Description |
+|--------|-------------|
+| `setLevelOneRetries(count)` | Crashes absorbed by restarting the same activity before escalating (default 2). |
+| `setShouldRecover(predicate)` | `RecoveryPredicate` consulted per crash; `false` hands the crash to the previous default handler (default: recover everything). |
+| `setCrashLoopBreaker(maxCrashes, windowMillis)` | Stop recovering after this many crashes inside the window (default 10 / 60 000 ms). |
+| `disableCrashLoopBreaker()` | Restore the pre-2.2.0 always-recover behavior. |
+| `setBackStackDepthProvider(provider)` | Report your own navigation depth (single-activity / Compose apps). |
+
+### `CrashEvent`
+
+Delivered to the `install` lambda. Properties: `throwable`, `thread`,
+`activity` (nullable), `retryCount`, `suggestedLevel`. Methods: `recover()`
+and `recover(level)`.
 
 ### `CrashListener` (abstract — you implement it)
 
@@ -239,6 +354,30 @@ Everything lives in the `com.osama.firecrasher` package.
 
 `LEVEL_ONE` · `LEVEL_TWO` · `LEVEL_THREE` — the recovery escalation ladder
 described [above](#how-recovery-works).
+
+## What's new in 2.2.0
+
+- **Crash-loop breaker, on by default.** After 10 caught crashes within 60
+  seconds, FireCrasher stops recovering and lets the app die exactly as it
+  would without the library — your crash reporter still receives the fatal.
+  This is a deliberate behavioral change; restore the old behavior with
+  `FireCrasherConfig.Builder().disableCrashLoopBreaker()`.
+- **Configurable recovery policy.** `FireCrasherConfig` controls the
+  LEVEL_ONE retry threshold (`setLevelOneRetries`), which throwables are
+  recovered (`setShouldRecover`), and the loop breaker.
+- **Lambda install with rich crash context.**
+  `FireCrasher.install(app) { crash -> … }` delivers a `CrashEvent` carrying
+  the throwable, crashed thread, foreground activity, retry count, and
+  suggested level — no subclass needed. `FireCrasher.recover()` is now
+  callable without arguments.
+- **Single-activity / Compose support.** `setBackStackDepthProvider` lets a
+  single-activity app report its navigation depth so LEVEL_TWO (go back) can
+  pop a Compose destination instead of restarting the whole app.
+- **`uninstall()`.** Fully reversible installation — restore the previous
+  handler and main loop for kill switches, A/B tests, and test isolation.
+- **Previous handler chaining (fix).** `install()` now captures the
+  previously installed default exception handler instead of silently
+  replacing it; any crash FireCrasher declines to recover reaches it.
 
 ## What's new in 2.1.0
 
