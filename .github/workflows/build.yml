@@ -21,5 +21,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build
+      # build runs check, which includes the unit tests, lint, and the
+      # apiCheck ABI-baseline comparison for the library.
+      - name: Build and check
         run: ./gradlew build --stacktrace
+
+      - name: Upload test and lint reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: '**/build/reports/'

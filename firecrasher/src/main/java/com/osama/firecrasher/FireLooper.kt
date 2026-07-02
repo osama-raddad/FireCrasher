@@ -5,7 +5,7 @@ import android.os.*
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-class FireLooper : Runnable {
+internal class FireLooper : Runnable {
 
     @SuppressLint("DiscouragedPrivateApi")
     override fun run() {
@@ -38,8 +38,6 @@ class FireLooper : Runnable {
             handler.dispatchMessage(message)
 
             Binder.clearCallingIdentity()
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) message.recycle()
         } catch (exception: Throwable) {
             uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), exception.cause
                     ?: exception)

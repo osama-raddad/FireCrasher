@@ -1,32 +1,50 @@
 package com.osama.firecrasher
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
+import android.app.ApplicationExitInfo
+import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.activity.ComponentActivity
 
 
-object FireCrasher {
+public object FireCrasher {
 
-    var retryCount: Int = 0
+    /**
+     * How long a recovery state stored with the previous process's exit record
+     * stays authoritative. Older records mean the user relaunched the app
+     * normally, not that a recovery restart is still in flight.
+     */
+    private const val RECOVERY_STATE_MAX_AGE_MS = 30_000L
+
+    public var retryCount: Int = 0
         private set
+
+    private var application: Application? = null
 
     private val crashHandler: CrashHandler by lazy { CrashHandler() }
 
-    fun install(application: Application, crashListener: CrashListener) {
+    public fun install(application: Application, crashListener: CrashListener) {
         if (FireLooper.isSafe) return
+        this.application = application
         crashHandler.setCrashListener(crashListener)
         application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
+        restorePreviousRecoveryState(application, crashListener)
         FireLooper.install()
         FireLooper.setUncaughtExceptionHandler(crashHandler)
         Thread.setDefaultUncaughtExceptionHandler(crashHandler)
     }
 
-    fun evaluate(): CrashLevel {
+    public fun evaluate(): CrashLevel = evaluate(retryCount, crashHandler.backStackCount)
+
+    internal fun evaluate(retryCount: Int, backStackCount: Int): CrashLevel {
         return when {
             retryCount <= 1 ->
                 //try to restart the failing activity
                 CrashLevel.LEVEL_ONE
-            crashHandler.backStackCount >= 1 ->
+            backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
                 CrashLevel.LEVEL_TWO
             else ->
@@ -35,22 +53,13 @@ object FireCrasher {
         }
     }
 
-    fun evaluateAsync(onEvaluate: ((activity: Activity?, level: CrashLevel) -> Unit)?) {
-        when {
-            retryCount <= 1 ->
-                //try to restart the failing activity
-                onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_ONE)
-            crashHandler.backStackCount >= 1 ->
-                //failure in restarting the activity try to go back
-                onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_TWO)
-            else ->
-                //no activates to go back to so just restart the app
-                onEvaluate?.invoke(crashHandler.activity, CrashLevel.LEVEL_THREE)
-        }
+    public fun evaluateAsync(onEvaluate: ((activity: Activity?, level: CrashLevel) -> Unit)?) {
+        onEvaluate?.invoke(crashHandler.activity, evaluate())
     }
 
-    fun recover(level: CrashLevel = evaluate(), onRecover: ((activity: Activity?) -> Unit)?) {
+    public fun recover(level: CrashLevel = evaluate(), onRecover: ((activity: Activity?) -> Unit)?) {
         val activityPair = getActivityPair()
+        val retryCountAtCrash = retryCount
         when (level) {
             //try to restart the failing activity
             CrashLevel.LEVEL_ONE -> {
@@ -67,9 +76,65 @@ object FireCrasher {
                 restartApp(activityPair)
             }
         }
+        // Stash the escalated state (not the zeroed counter) with the process
+        // exit record: if this recovery attempt kills the process, the next
+        // launch must know how far recovery had already escalated.
+        publishRecoveryState(
+            level,
+            if (level == CrashLevel.LEVEL_ONE) retryCount else retryCountAtCrash,
+        )
         onRecover?.invoke(crashHandler.activity)
     }
 
+    /**
+     * Past terminations of this app recorded by the system, newest first.
+     * Includes causes the in-process handler can never see, such as native
+     * crashes, ANRs, and low-memory kills. Empty below API 30.
+     */
+    @JvmStatic
+    @JvmOverloads
+    public fun getHistoricalExitReasons(context: Context, maxCount: Int = 16): List<ApplicationExitInfo> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return activityManager.getHistoricalProcessExitReasons(context.packageName, 0, maxCount)
+    }
+
+    /**
+     * The most recent recorded exit caused by a crash, native crash, or ANR,
+     * or null if none is recorded. The record may predate the previous launch;
+     * use [ApplicationExitInfo.getTimestamp] to judge freshness. Null below API 30.
+     */
+    @JvmStatic
+    public fun getLastAbnormalExit(context: Context): ApplicationExitInfo? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return null
+        return getHistoricalExitReasons(context).firstOrNull {
+            it.reason == ApplicationExitInfo.REASON_CRASH ||
+                    it.reason == ApplicationExitInfo.REASON_CRASH_NATIVE ||
+                    it.reason == ApplicationExitInfo.REASON_ANR
+        }
+    }
+
+    internal fun restorePreviousRecoveryState(context: Context, crashListener: CrashListener) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+        val lastExit = getLastAbnormalExit(context) ?: return
+        val state = RecoveryStateCodec.decode(lastExit.processStateSummary)
+        if (state != null && System.currentTimeMillis() - lastExit.timestamp < RECOVERY_STATE_MAX_AGE_MS) {
+            // The previous process died while a recovery was in flight. Resume
+            // the escalation ladder instead of retrying the level that just
+            // failed: anything past LEVEL_ONE must not fall back to restarting
+            // the activity that killed the process.
+            retryCount = if (state.level == CrashLevel.LEVEL_ONE) state.retryCount
+            else maxOf(state.retryCount, 2)
+        }
+        crashListener.onPreviousProcessExit(lastExit)
+    }
+
+    private fun publishRecoveryState(level: CrashLevel, retryCount: Int) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+        val context = application ?: crashHandler.activity ?: return
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        activityManager.setProcessStateSummary(RecoveryStateCodec.encode(level, retryCount))
+    }
 
     private fun getActivityPair(): Pair<Activity?, Intent?> {
         val activity: Activity? = crashHandler.activity
@@ -83,7 +148,7 @@ object FireCrasher {
     }
 
     // overridePendingTransition is deprecated on API 34+ (replaced by
-    // overrideActivityTransition), but is kept here for minSdk 21 compatibility.
+    // overrideActivityTransition), but is kept here for minSdk 23 compatibility.
     @Suppress("DEPRECATION")
     private fun restartActivity(activityPair: Pair<Activity?, Intent?>) {
         val activity = activityPair.first ?: run {
@@ -104,11 +169,21 @@ object FireCrasher {
         retryCount += 1
     }
 
-    // Operates on a plain Activity reference, so the OnBackPressedDispatcher
-    // (which requires a ComponentActivity) is not guaranteed to be available.
-    @Suppress("DEPRECATION")
-    private fun goBack(activityPair: Pair<Activity?, Intent?>) {
-        activityPair.first?.onBackPressed()
+    internal fun goBack(activityPair: Pair<Activity?, Intent?>) {
+        val activity = activityPair.first ?: return
+        // The dispatcher is @MainThread; runOnUiThread executes inline when
+        // already on the main thread (the normal crash path), so recovery
+        // stays synchronous there.
+        activity.runOnUiThread {
+            if (activity is ComponentActivity) {
+                activity.onBackPressedDispatcher.onBackPressed()
+            } else {
+                // Plain framework Activity: no dispatcher exists, so the
+                // deprecated call remains the only way to pop the back stack.
+                @Suppress("DEPRECATION")
+                activity.onBackPressed()
+            }
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -126,5 +201,10 @@ object FireCrasher {
             finish()
             overridePendingTransition(0, 0)
         }
+    }
+
+    internal fun resetForTest() {
+        retryCount = 0
+        application = null
     }
 }

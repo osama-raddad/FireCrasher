@@ -1,6 +1,7 @@
 plugins {
-    id 'com.android.library'
+    alias(libs.plugins.android.library)
     id 'maven-publish'
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 android {
@@ -8,7 +9,8 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        minSdk = 21
+        // androidx.activity 1.12+ (OnBackPressedDispatcher) requires minSdk 23.
+        minSdk = 23
         targetSdk = 36
     }
 
@@ -19,11 +21,81 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    lint {
+        abortOnError = true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     publishing {
         singleVariant('release') {
             withSourcesJar()
         }
     }
+}
+
+kotlin {
+    // Public declarations must carry explicit visibility and return types,
+    // so nothing leaks into the published API surface by accident.
+    explicitApi()
+}
+
+dependencies {
+    implementation libs.androidx.activity
+
+    testImplementation libs.junit
+    testImplementation libs.robolectric
+    testImplementation libs.androidx.test.core
+}
+
+// AARs and source jars are consumed by checksum; keep their bytes stable
+// across rebuilds of the same sources.
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+// The binary-compatibility-validator plugin only activates for the standalone
+// Kotlin plugins, not AGP's built-in Kotlin, so its dump/compare tasks are
+// wired to the release compile outputs by hand. The committed baseline lives
+// in api/firecrasher.api; run apiDump after intentional API changes.
+configurations {
+    // Worker classpath for the manually wired binary-compatibility-validator
+    // tasks; matches the metadata library of the built-in Kotlin version.
+    bcvRuntime {
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    bcvRuntime libs.kotlin.metadata.jvm
+}
+
+def apiBuild = tasks.register('apiBuild', kotlinx.validation.KotlinApiBuildTask) {
+    inputClassesDirs.from(
+            tasks.named('compileReleaseKotlin').map { it.outputs.files },
+            tasks.named('compileReleaseJavaWithJavac').map { it.outputs.files },
+    )
+    outputApiFile = layout.buildDirectory.file('api/firecrasher.api')
+    runtimeClasspath.from(configurations.bcvRuntime)
+}
+
+def apiCheck = tasks.register('apiCheck', kotlinx.validation.KotlinApiCompareTask) {
+    projectApiFile = layout.projectDirectory.file('api/firecrasher.api')
+    generatedApiFile = apiBuild.flatMap { it.outputApiFile }
+}
+
+tasks.register('apiDump', Copy) {
+    from apiBuild.flatMap { it.outputApiFile }
+    into layout.projectDirectory.dir('api')
+}
+
+tasks.named('check') {
+    dependsOn apiCheck
 }
 
 afterEvaluate {
@@ -36,7 +108,7 @@ afterEvaluate {
                 // com.github.<user> group and git-tag version when it builds.
                 groupId = 'com.osama.firecrasher'
                 artifactId = 'firecrasher'
-                version = project.findProperty('VERSION_NAME') ?: '2.0.1'
+                version = project.findProperty('VERSION_NAME') ?: '2.1.0'
 
                 pom {
                     name = 'firecrasher'

@@ -18,7 +18,7 @@
 <a href='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml' target='_blank'><img src='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml/badge.svg' alt='Build Status' /></a>
 </p>
 
-[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-21%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=21) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-23%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=23) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
 # FireCrasher
@@ -36,8 +36,28 @@ Every developer knows that shit happens, and at some point you will ship a rando
 
 ## Requirements
 
-- Min SDK version 21
+- Min SDK version 23 (raised from 21 in 2.1.0 by the androidx.activity dependency)
 - Consuming projects need a toolchain that accepts Java 21 bytecode and Kotlin 2.2 metadata (AGP 8.2+ / Kotlin 2.1+)
+- FireCrasher contains no native code, so it adds no 16 KB page-size alignment concerns
+
+## What's new in 2.1.0
+
+- **Predictive back compatible recovery.** Level-two recovery now goes through
+  `OnBackPressedDispatcher` when the crashed activity is a `ComponentActivity`,
+  so the recovery chain keeps working in apps that target Android 16 (API 36),
+  where the system no longer calls `Activity.onBackPressed()`. Plain framework
+  activities still get the legacy call.
+- **Crash reports beyond the JVM.** On API 30+ FireCrasher reads the system's
+  [`ApplicationExitInfo`](https://developer.android.com/reference/android/app/ApplicationExitInfo)
+  records, surfacing native crashes and ANRs that an in-process handler can
+  never intercept — see `CrashListener.onPreviousProcessExit` and
+  `FireCrasher.getLastAbnormalExit` below.
+- **Restart-loop protection.** On API 30+ the current recovery level survives
+  process death (via `ActivityManager.setProcessStateSummary`), so a crash
+  during recovery escalates instead of looping the same crashing activity.
+- **Locked-down API surface.** The library is compiled in Kotlin explicit API
+  mode and every change is checked against a committed ABI baseline
+  (`firecrasher/api/firecrasher.api`) in CI.
 
 
 ## Install
@@ -55,24 +75,13 @@ Step 2. Add the dependency
 
 ```groove
 	dependencies {
-	        implementation 'com.github.osama-raddad:FireCrasher:2.0.0'
+	        implementation 'com.github.osama-raddad:FireCrasher:2.1.0'
 	}
 ```
 
 ## Usage
 
 to use the library add this code to Application class :
-
-```kotlin
-class App : Application() {
-    override fun onCreate() {
-        super.onCreate()
-	FireCrasher.install(this);
-    }
-}
-```
-
-or you can use your logic, For example :
 
 ```kotlin
 class App : Application() {
@@ -109,6 +118,41 @@ to detarmein the crash level before starting the recovery you can use:
             }
         })
 ```
+
+### Detecting crashes the handler cannot catch (API 30+)
+
+Native crashes, ANRs, and low-memory kills terminate the process before any
+in-process handler runs. On the next launch FireCrasher reports the system's
+record of such deaths through an optional `CrashListener` callback:
+
+```kotlin
+FireCrasher.install(this, object : CrashListener() {
+
+    override fun onCrash(throwable: Throwable) {
+        recover()
+    }
+
+    override fun onPreviousProcessExit(exitInfo: ApplicationExitInfo) {
+        // The record may be from an older session; check exitInfo.timestamp.
+        // Ex: Crashlytics.log("previous exit: ${exitInfo.reason} ${exitInfo.description}")
+    }
+})
+```
+
+You can also query the records directly, from Kotlin or Java:
+
+```kotlin
+val lastCrash = FireCrasher.getLastAbnormalExit(context)          // or null
+val history = FireCrasher.getHistoricalExitReasons(context, 16)  // newest first
+```
+
+```java
+ApplicationExitInfo lastCrash = FireCrasher.getLastAbnormalExit(context);
+List<ApplicationExitInfo> history = FireCrasher.getHistoricalExitReasons(context);
+```
+
+Both return empty/null below API 30.
+
 ## Contributing
 
 We welcome contributions to FireCrasher!

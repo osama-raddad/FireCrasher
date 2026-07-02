@@ -1,0 +1,26 @@
+[versions]
+agp = "9.2.1"
+androidxActivity = "1.13.0"
+androidxAppcompat = "1.7.1"
+androidxConstraintlayout = "2.2.1"
+androidxTestCore = "1.7.0"
+binaryCompatibilityValidator = "0.18.1"
+junit = "4.13.2"
+kotlinMetadataJvm = "2.2.10"
+material = "1.14.0"
+robolectric = "4.16.1"
+
+[libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlin-metadata-jvm = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlinMetadataJvm" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }

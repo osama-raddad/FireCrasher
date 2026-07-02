@@ -1,6 +1,6 @@
 package com.osama.firecrasher
 
-enum class CrashLevel {
+public enum class CrashLevel {
     LEVEL_ONE,
     LEVEL_TWO,
     LEVEL_THREE,
