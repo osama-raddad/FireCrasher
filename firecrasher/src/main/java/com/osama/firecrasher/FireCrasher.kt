@@ -82,6 +82,9 @@ object FireCrasher {
         return Pair(activity, intent)
     }
 
+    // overridePendingTransition is deprecated on API 34+ (replaced by
+    // overrideActivityTransition), but is kept here for minSdk 21 compatibility.
+    @Suppress("DEPRECATION")
     private fun restartActivity(activityPair: Pair<Activity?, Intent?>) {
         val activity = activityPair.first ?: run {
             retryCount += 1
@@ -101,10 +104,14 @@ object FireCrasher {
         retryCount += 1
     }
 
+    // Operates on a plain Activity reference, so the OnBackPressedDispatcher
+    // (which requires a ComponentActivity) is not guaranteed to be available.
+    @Suppress("DEPRECATION")
     private fun goBack(activityPair: Pair<Activity?, Intent?>) {
         activityPair.first?.onBackPressed()
     }
 
+    @Suppress("DEPRECATION")
     private fun restartApp(activityPair: Pair<Activity?, Intent?>) {
         val activity = activityPair.first ?: return
         val packageName = activity.baseContext.packageName

@@ -43,7 +43,7 @@ class FireLooper : Runnable {
         } catch (exception: Throwable) {
             uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), exception.cause
                     ?: exception)
-            Handler().post(this)
+            Handler(Looper.getMainLooper()).post(this)
             break
         }
 

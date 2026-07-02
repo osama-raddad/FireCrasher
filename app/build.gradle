@@ -1,26 +1,28 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    namespace 'com.osama.firecrasherdemo'
-    compileSdk 36
+    namespace = 'com.osama.firecrasherdemo'
+    compileSdk = 36
 
     defaultConfig {
-        applicationId "com.osama.firecrasherdemo"
-        minSdk 23
-        targetSdk 36
-        versionCode 14
-        versionName "2.0.0"
+        applicationId = "com.osama.firecrasherdemo"
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 14
+        versionName = "2.0.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -29,6 +31,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation project(':firecrasher')
+    implementation(project(':firecrasher'))
     implementation 'com.github.GrenderG:Toasty:1.5.2'
 }

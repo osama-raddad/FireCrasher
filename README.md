@@ -2,9 +2,6 @@
 <img src='https://cdn-images-1.medium.com/max/2600/1*7CVLni2XSYNFzy7dRHLtsQ.png'/>
 </p>
 <p align="center">
-<a href='https://bintray.com/osama-raddad/maven/fire-crasher?source=watch' alt='Get automatic notifications about new "fire-crasher" versions'><img src='https://www.bintray.com/docs/images/bintray_badge_color.png'></a>
-</p>
-<p align="center">
  <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Methods count-83-e91e63.svg"/></a> <a href="http://www.methodscount.com/?lib=com.osama.firecrasher%3Afirecrasher%3A1.0"><img src="https://img.shields.io/badge/Size-10 KB-e91e63.svg"/></a>
 </p>
 <p align="center">
@@ -18,10 +15,10 @@
 
 </p>
 <p align="center">
-<a href='https://travis-ci.org/osama-raddad/FireCrasher' target='_blank'><img src='https://travis-ci.org/osama-raddad/FireCrasher.svg?branch=master' border='0' alt='Build Status' /></a>
+<a href='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml' target='_blank'><img src='https://github.com/osama-raddad/FireCrasher/actions/workflows/build.yml/badge.svg' alt='Build Status' /></a>
 </p>
 
-[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![](https://jitpack.io/v/osama-raddad/FireCrasher.svg)](https://jitpack.io/#osama-raddad/FireCrasher) [![API](https://img.shields.io/badge/API-21%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=21) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FireCrasher-green.svg?style=true)](https://android-arsenal.com/details/1/3599) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
 # FireCrasher
@@ -39,7 +36,7 @@ Every developer knows that shit happens, and at some point you will ship a rando
 
 ## Requirements
 
-Min SDK version 14
+Min SDK version 21
 
 
 ## Install

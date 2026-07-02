@@ -74,6 +74,9 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         return lifecycleCallbacks;
     }
 
+    // getRunningTasks is deprecated but still returns the caller's own tasks,
+    // which is all this crash handler needs to estimate the back stack depth.
+    @SuppressWarnings("deprecation")
     public int getBackStackCount() {
         if (activity == null) return 0;
         ActivityManager m = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);

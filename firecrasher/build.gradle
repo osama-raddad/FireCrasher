@@ -1,4 +1,6 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 ext {
     publishedGroupId = 'com.osama.firecrasher'
@@ -22,16 +24,16 @@ ext {
 }
 
 android {
-    namespace 'com.osama.firecrasher'
-    compileSdk 36
+    namespace = 'com.osama.firecrasher'
+    compileSdk = 36
 
     defaultConfig {
-        minSdk 21
-        targetSdk 36
+        minSdk = 21
+        targetSdk = 36
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
