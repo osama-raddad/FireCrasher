@@ -13,11 +13,10 @@ android {
     }
 
     compileOptions {
-        // Java 17 keeps the published AAR consumable by the widest range of
-        // toolchains (D8 accepts class-file 61 from AGP 7.4); the demo app
-        // module uses 21, but a published library should not require it.
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        // Java 21 is Android's bytecode ceiling (D8 does not dex class files
+        // newer than 65). Consumers need AGP 8.2+ to dex this library.
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     publishing {

@@ -37,7 +37,7 @@ Every developer knows that shit happens, and at some point you will ship a rando
 ## Requirements
 
 - Min SDK version 21
-- Consuming projects need a toolchain that accepts Java 17 bytecode and Kotlin 2.2 metadata (AGP 7.4+ / Kotlin 2.1+)
+- Consuming projects need a toolchain that accepts Java 21 bytecode and Kotlin 2.2 metadata (AGP 8.2+ / Kotlin 2.1+)
 
 
 ## Install
