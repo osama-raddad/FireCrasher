@@ -1,26 +1,6 @@
 plugins {
     id 'com.android.library'
-}
-
-ext {
-    publishedGroupId = 'com.osama.firecrasher'
-    libraryName = 'firecrasher'
-    artifact = 'firecrasher'
-
-    libraryDescription = 'a android crash handler'
-
-    siteUrl = 'https://github.com/osama-raddad/FireCrasher'
-    gitUrl = 'https://github.com/osama-raddad/FireCrasher.git'
-
-    libraryVersion = '1.5.12'
-
-    developerId = 'osama-raddad'
-    developerName = 'osama raddad'
-    developerEmail = 'osama.s.raddad@gmail.com'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
+    id 'maven-publish'
 }
 
 android {
@@ -33,7 +13,55 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        // Java 17 keeps the published AAR consumable by the widest range of
+        // toolchains (D8 accepts class-file 61 from AGP 7.4); the demo app
+        // module uses 21, but a published library should not require it.
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                // JitPack remaps these coordinates to the requested
+                // com.github.<user> group and git-tag version when it builds.
+                groupId = 'com.osama.firecrasher'
+                artifactId = 'firecrasher'
+                version = project.findProperty('VERSION_NAME') ?: '2.0.1'
+
+                pom {
+                    name = 'firecrasher'
+                    description = 'An Android crash handling and recovery library'
+                    url = 'https://github.com/osama-raddad/FireCrasher'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'osama-raddad'
+                            name = 'osama raddad'
+                            email = 'osama.s.raddad@gmail.com'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/osama-raddad/FireCrasher'
+                        connection = 'scm:git:https://github.com/osama-raddad/FireCrasher.git'
+                    }
+                }
+            }
+        }
     }
 }
