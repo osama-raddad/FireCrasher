@@ -34,26 +34,33 @@ In your app module's `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation 'com.github.osama-raddad:FireCrasher:2.1.0'
+    implementation 'com.github.osama-raddad:FireCrasher:3.0.0'
 }
 ```
 
 ## 3. Install in your Application class
 
 Installation **must** happen in `Application.onCreate`, before any activity is
-created — FireCrasher hooks the main looper and activity lifecycle there.
+created — FireCrasher hooks the main looper and activity lifecycle there. A
+bare install already recovers automatically at the evaluated level:
 
 ```kotlin
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        FireCrasher.install(this, object : CrashListener() {
-            override fun onCrash(throwable: Throwable) {
-                // Kick off recovery. See the report-crashes and
-                // customize-recovery skills for reporting and custom UX.
-                recover()
-            }
-        })
+        installFireCrasher()
+    }
+}
+```
+
+To take over crash handling, configure `onCrash` (see the report-crashes and
+customize-recovery skills for reporting and custom UX):
+
+```kotlin
+installFireCrasher {
+    onCrash {
+        // `throwable`, `activity`, `level`, `retryCount` are in scope.
+        recover()
     }
 }
 ```
@@ -76,5 +83,5 @@ button.setOnClickListener { throw RuntimeException("boom") }
 ## Next
 
 - `report-crashes` — forward the crash to your crash reporter.
-- `customize-recovery` — show a loading/recovery UI based on the crash level.
+- `customize-recovery` — show a loading/recovery UI based on the recovery level.
 - `detect-native-crashes-and-anrs` — capture crashes the handler can't see.

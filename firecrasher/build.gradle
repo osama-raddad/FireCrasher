@@ -108,7 +108,7 @@ afterEvaluate {
                 // com.github.<user> group and git-tag version when it builds.
                 groupId = 'com.osama.firecrasher'
                 artifactId = 'firecrasher'
-                version = project.findProperty('VERSION_NAME') ?: '2.1.0'
+                version = project.findProperty('VERSION_NAME') ?: '3.0.0'
 
                 pom {
                     name = 'firecrasher'

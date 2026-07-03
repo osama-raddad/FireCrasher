@@ -10,15 +10,15 @@ live in `firecrasher/AGENTS.md` and `app/AGENTS.md`.
 **FireCrasher** is an Android library that catches uncaught exceptions and
 runs a staged **recovery** sequence to keep the app alive instead of letting
 it die. It is published to JitPack as `com.github.osama-raddad:FireCrasher`.
-Current version is **2.1.0**.
+Current version is **3.0.0**.
 
-The recovery escalation ladder has three levels (`CrashLevel`):
+The recovery escalation ladder has three levels (`RecoveryLevel`):
 
-- **LEVEL_ONE** — restart the crashed activity (`recreate()` on the first
-  attempt, then relaunch-and-finish). Used while `retryCount <= 1`.
-- **LEVEL_TWO** — the activity keeps crashing, so pop the back stack (go back)
+- **RESTART_ACTIVITY** — restart the crashed activity (`recreate()` on the
+  first attempt, then relaunch-and-finish). Used while `retryCount <= 1`.
+- **GO_BACK** — the activity keeps crashing, so pop the back stack (go back)
   if there is another activity behind it.
-- **LEVEL_THREE** — nothing to go back to, so relaunch the whole app from its
+- **RELAUNCH_APP** — nothing to go back to, so relaunch the whole app from its
   launcher activity.
 
 The core trick (`FireLooper`) is to replace the main-thread message loop with a
@@ -38,21 +38,25 @@ This is a two-module Gradle project (`settings.gradle`):
 
 | File | Role |
 |------|------|
-| `FireCrasher.kt` | Public API entry point (Kotlin `object`). `install`, `evaluate`, `recover`, and the `ApplicationExitInfo` query helpers. Holds `retryCount` and the recovery-state persistence logic. |
-| `CrashHandler.java` | `Thread.UncaughtExceptionHandler` + `ActivityLifecycleCallbacks`. Tracks the current activity and the live activity count (`getBackStackCount`). Delivers crashes to the listener on the main thread. |
+| `FireCrasher.kt` | Public API entry point: the `FireCrasher` object (`install`), the `Application.installFireCrasher` extension, and the internal recovery policy (`evaluate`, `recover`, `dispatchCrash`, `retryCount`, recovery-state persistence). |
+| `FireCrasherConfig.kt` | The `@FireCrasherDsl` marker and the install DSL builder: `onCrash { }` (CrashScope receiver, default `{ recover() }`) and `onPreviousProcessExit { }`. |
+| `CrashScope.kt` | Receiver of the `onCrash` handler: `throwable`, `activity`, `level`, `retryCount`, and `recover(level = evaluated) { }`. |
+| `RecoveryLevel.kt` | The three-level recovery enum (`RESTART_ACTIVITY`, `GO_BACK`, `RELAUNCH_APP`). Declaration order is persisted by the codec — append only. |
+| `ExitInfo.kt` | Public `Context` extensions `historicalExitReasons(maxCount)` / `lastAbnormalExit()` (API 30+, degrade to empty/null below). |
+| `CrashHandler.kt` | Internal `Thread.UncaughtExceptionHandler` + `ActivityLifecycleCallbacks`. Tracks the current activity and the live activity count (`backStackCount`). Delivers crashes to `dispatchCrash` on the main thread. |
 | `FireLooper.kt` | Reflection-based replacement main loop that survives exceptions. `isSafe` guards against double-install. |
-| `CrashListener.kt` | Abstract callback the consumer implements: `onCrash` (required), `onPreviousProcessExit` (optional), plus protected `recover`/`evaluate` helpers. |
-| `CrashLevel.kt` | The three-level recovery enum. |
 | `RecoveryState.kt` | `RecoveryState` data class + `RecoveryStateCodec` — encodes recovery progress into a ≤128-byte blob stored via `ActivityManager.setProcessStateSummary` so recovery escalation survives process death (API 30+). |
 
 ### Tests (`firecrasher/src/test/java/...`)
 
 JVM unit tests run under **Robolectric** (no device/emulator needed):
 
-- `CrashLevelEvaluationTest` — the level-selection logic (pure `evaluate`).
+- `RecoveryLevelEvaluationTest` — the level-selection logic (pure `evaluate`).
 - `BackStackCountTest` — activity counting via lifecycle callbacks.
-- `CrashHandlerTest` — crash delivery to the listener.
-- `GoBackDispatchTest` — LEVEL_TWO uses `OnBackPressedDispatcher` for
+- `CrashHandlerTest` — crash delivery to the `onCrash` hook.
+- `FireCrasherDslTest` — `dispatchCrash` scope population, the auto-recover
+  default, last-registration-wins, and `CrashScope.recover` at a forced level.
+- `GoBackDispatchTest` — GO_BACK uses `OnBackPressedDispatcher` for
   `ComponentActivity`, legacy `onBackPressed()` for plain activities.
 - `ExitInfoTest` — `ApplicationExitInfo` querying (`@Config(sdk = [30, 36])`).
 - `RecoveryStateCodecTest` — encode/decode round-trips and the 128-byte limit.
@@ -93,6 +97,9 @@ updated `firecrasher.api` in the same change.
 `setProcessStateSummary` features are API 30+ and degrade gracefully (return
 empty/null) below that.
 
+**Enum order is persisted.** `RecoveryStateCodec` stores `RecoveryLevel`
+ordinals with the process exit record; never reorder the enum — append only.
+
 **Deprecations are deliberate.** `overridePendingTransition` and framework
 `onBackPressed()` are kept (with `@Suppress("DEPRECATION")`) for minSdk 23
 compatibility; do not "fix" them without preserving the old path.
@@ -101,8 +108,9 @@ compatibility; do not "fix" them without preserving the old path.
 order (`preserveFileTimestamps = false`, `reproducibleFileOrder = true`)
 because JitPack consumes AARs by checksum. Don't remove this.
 
-**Language mix.** `CrashHandler` is Java; the rest of the library is Kotlin.
-Match the language of the file you're editing.
+**All Kotlin.** As of 3.0.0 the library (and its public API) is 100% Kotlin;
+the demo app still mixes Java and Kotlin — match the language of the file
+you're editing there.
 
 ## Documentation
 
@@ -110,7 +118,7 @@ Match the language of the file you're editing.
 reporting, the "What's new" changelog). When you change public behavior, the
 supported SDK range, or the version, update `README.md` — especially the
 version in the install snippet and the `VERSION_NAME` default in
-`firecrasher/build.gradle` (currently `2.1.0`).
+`firecrasher/build.gradle` (currently `3.0.0`).
 
 ## Publishing
 

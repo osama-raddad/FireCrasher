@@ -6,9 +6,10 @@ root [`AGENTS.md`](../AGENTS.md) for the library architecture.
 
 ## What's here
 
-- `App.kt` — installs FireCrasher in `Application.onCreate` and implements a
-  `CrashListener` that calls `evaluate { … }` / `recover`, showing a loading
-  dialog on LEVEL_ONE. This is the reference example of consumer usage.
+- `App.kt` — installs FireCrasher in `Application.onCreate` via
+  `installFireCrasher { onCrash { … } }`, showing a loading dialog on
+  RESTART_ACTIVITY and a choice dialog otherwise. This is the reference
+  example of consumer usage.
 - `MainActivity.java` / `Main2Activity.kt` — screens that deliberately throw
   (e.g. `Main2Activity` throws from a delayed main-thread post) so you can watch
   the recovery ladder run.

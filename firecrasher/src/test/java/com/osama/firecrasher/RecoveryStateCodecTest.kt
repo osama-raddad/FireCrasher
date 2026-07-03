@@ -9,7 +9,7 @@ class RecoveryStateCodecTest {
 
     @Test
     fun `round trips every level and retry count`() {
-        for (level in CrashLevel.entries) {
+        for (level in RecoveryLevel.entries) {
             for (retryCount in intArrayOf(0, 1, 2, 64, 127)) {
                 val decoded = RecoveryStateCodec.decode(RecoveryStateCodec.encode(level, retryCount))
                 assertEquals(RecoveryState(level, retryCount), decoded)
@@ -19,13 +19,13 @@ class RecoveryStateCodecTest {
 
     @Test
     fun `clamps retry count into byte range`() {
-        assertEquals(127, RecoveryStateCodec.decode(RecoveryStateCodec.encode(CrashLevel.LEVEL_ONE, 500))?.retryCount)
-        assertEquals(0, RecoveryStateCodec.decode(RecoveryStateCodec.encode(CrashLevel.LEVEL_ONE, -3))?.retryCount)
+        assertEquals(127, RecoveryStateCodec.decode(RecoveryStateCodec.encode(RecoveryLevel.RESTART_ACTIVITY, 500))?.retryCount)
+        assertEquals(0, RecoveryStateCodec.decode(RecoveryStateCodec.encode(RecoveryLevel.RESTART_ACTIVITY, -3))?.retryCount)
     }
 
     @Test
     fun `stays within the 128 byte process state summary limit`() {
-        assertTrue(RecoveryStateCodec.encode(CrashLevel.LEVEL_THREE, 127).size <= 128)
+        assertTrue(RecoveryStateCodec.encode(RecoveryLevel.RELAUNCH_APP, 127).size <= 128)
     }
 
     @Test
@@ -34,9 +34,9 @@ class RecoveryStateCodecTest {
         assertNull(RecoveryStateCodec.decode(byteArrayOf()))
         assertNull(RecoveryStateCodec.decode(byteArrayOf(1, 2)))
         assertNull(RecoveryStateCodec.decode("not ours".toByteArray()))
-        val wrongVersion = RecoveryStateCodec.encode(CrashLevel.LEVEL_ONE, 1).apply { this[2] = 99 }
+        val wrongVersion = RecoveryStateCodec.encode(RecoveryLevel.RESTART_ACTIVITY, 1).apply { this[2] = 99 }
         assertNull(RecoveryStateCodec.decode(wrongVersion))
-        val badLevel = RecoveryStateCodec.encode(CrashLevel.LEVEL_ONE, 1).apply { this[3] = 42 }
+        val badLevel = RecoveryStateCodec.encode(RecoveryLevel.RESTART_ACTIVITY, 1).apply { this[3] = 42 }
         assertNull(RecoveryStateCodec.decode(badLevel))
     }
 }

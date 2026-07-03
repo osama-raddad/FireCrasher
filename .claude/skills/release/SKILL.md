@@ -11,7 +11,7 @@ version and metadata in sync, verify, commit, and tag. JitPack does the rest
 (`jitpack.yml` pins JDK 21; coordinates are remapped to
 `com.github.osama-raddad:FireCrasher:<tag>`).
 
-The current version is **2.1.0**. Pick the new version with semantic versioning:
+The current version is **3.0.0**. Pick the new version with semantic versioning:
 a breaking public API change (anything that alters `firecrasher/api/firecrasher.api`
 incompatibly) is a **major** bump.
 
@@ -21,7 +21,7 @@ incompatibly) is a **major** bump.
    be merged or staged. Run the `run-checks` skill and confirm green.
 
 2. **Bump `VERSION_NAME`** in `firecrasher/build.gradle` (the
-   `version = project.findProperty('VERSION_NAME') ?: '2.1.0'` fallback in the
+   `version = project.findProperty('VERSION_NAME') ?: '3.0.0'` fallback in the
    `publishing` block). Set it to the new version.
 
 3. **Update `README.md`:**

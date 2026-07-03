@@ -9,11 +9,13 @@ editing the library.
 
 | File | Role |
 |------|------|
-| `FireCrasher.kt` | Public API `object`: `install`, `evaluate`, `recover`, and the `ApplicationExitInfo` helpers. Owns `retryCount` and recovery-state persistence. |
-| `CrashHandler.java` | `UncaughtExceptionHandler` + `ActivityLifecycleCallbacks`. Tracks the current activity and live activity count (`getBackStackCount`). Java, not Kotlin. |
+| `FireCrasher.kt` | Public `FireCrasher.install` + `Application.installFireCrasher` extension; internal policy: `evaluate`, `recover`, `dispatchCrash`, `retryCount`, recovery-state persistence. |
+| `FireCrasherConfig.kt` | The install DSL builder (`onCrash { }`, `onPreviousProcessExit { }`) and the `@FireCrasherDsl` marker. |
+| `CrashScope.kt` | `onCrash` receiver: `throwable`, `activity`, `level`, `retryCount`, `recover(...)`. |
+| `RecoveryLevel.kt` | The three recovery levels. Ordinals are persisted by the codec — append only, never reorder. |
+| `ExitInfo.kt` | Public `Context.historicalExitReasons` / `Context.lastAbnormalExit` extensions. |
+| `CrashHandler.kt` | Internal `UncaughtExceptionHandler` + `ActivityLifecycleCallbacks`. Tracks the current activity and live activity count (`backStackCount`). |
 | `FireLooper.kt` | Reflection-based main loop that survives main-thread exceptions; `isSafe` guards double-install. |
-| `CrashListener.kt` | Abstract consumer callback (`onCrash`, optional `onPreviousProcessExit`). |
-| `CrashLevel.kt` | The three recovery levels. |
 | `RecoveryState.kt` | `RecoveryStateCodec` — encodes recovery progress into a ≤128-byte blob for `setProcessStateSummary` (API 30+). |
 
 ## Rules for changing this module
@@ -26,14 +28,14 @@ editing the library.
   the same change.
 - **minSdk 23.** Guard API 30+ features (`ApplicationExitInfo`,
   `setProcessStateSummary`) behind `Build.VERSION.SDK_INT` checks and degrade to
-  empty/null below that — see `getHistoricalExitReasons`/`getLastAbnormalExit`.
+  empty/null below that — see `Context.historicalExitReasons`/`lastAbnormalExit`.
 - **Deliberate deprecations.** `overridePendingTransition` and framework
   `onBackPressed()` are kept with `@Suppress("DEPRECATION")` for minSdk 23. Do
   not remove them without preserving the legacy path.
 - **Reproducible archives** (`preserveFileTimestamps = false`,
   `reproducibleFileOrder = true`) — JitPack consumes AARs by checksum. Keep it.
 - **Version bumps** must keep `VERSION_NAME` (in `build.gradle`, currently
-  `2.1.0`), the ABI baseline, and the README version in sync.
+  `3.0.0`), the ABI baseline, and the README version in sync.
 
 ## Tests (`src/test/java/...`)
 
@@ -45,7 +47,8 @@ JVM unit tests run under **Robolectric** — no device needed.
 ./gradlew :firecrasher:apiDump     # regenerate the ABI baseline
 ```
 
-Suites: `CrashLevelEvaluationTest` (level selection), `BackStackCountTest`,
-`CrashHandlerTest` (crash delivery), `GoBackDispatchTest` (dispatcher vs.
-legacy back), `ExitInfoTest` (`@Config(sdk = [30, 36])`),
+Suites: `RecoveryLevelEvaluationTest` (level selection), `BackStackCountTest`,
+`CrashHandlerTest` (crash delivery), `FireCrasherDslTest` (scope population,
+auto-recover default, forced-level recover), `GoBackDispatchTest` (dispatcher
+vs. legacy back), `ExitInfoTest` (`@Config(sdk = [30, 36])`),
 `RecoveryStateCodecTest`. Add a test alongside any behavior change.

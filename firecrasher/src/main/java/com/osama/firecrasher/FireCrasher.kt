@@ -9,6 +9,24 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.ComponentActivity
 
+/**
+ * Installs FireCrasher on this application. Fluent alias for
+ * [FireCrasher.install]; call once, in [Application.onCreate]:
+ *
+ * ```
+ * installFireCrasher {
+ *     onCrash {
+ *         report(throwable)
+ *         recover()
+ *     }
+ * }
+ * ```
+ *
+ * A bare `installFireCrasher()` recovers automatically at the evaluated level.
+ */
+public fun Application.installFireCrasher(configure: FireCrasherConfig.() -> Unit = {}) {
+    FireCrasher.install(this, configure)
+}
 
 public object FireCrasher {
 
@@ -19,59 +37,71 @@ public object FireCrasher {
      */
     private const val RECOVERY_STATE_MAX_AGE_MS = 30_000L
 
-    public var retryCount: Int = 0
+    internal var retryCount: Int = 0
         private set
 
     private var application: Application? = null
 
-    private val crashHandler: CrashHandler by lazy { CrashHandler() }
+    internal var onCrashHandler: CrashScope.() -> Unit = { recover() }
 
-    public fun install(application: Application, crashListener: CrashListener) {
+    internal val crashHandler: CrashHandler by lazy { CrashHandler() }
+
+    /**
+     * Hooks the main loop and activity lifecycle. Call once, in
+     * [Application.onCreate] — or use the [installFireCrasher] extension.
+     */
+    public fun install(application: Application, configure: FireCrasherConfig.() -> Unit = {}) {
         if (FireLooper.isSafe) return
+        val config = FireCrasherConfig().apply(configure)
         this.application = application
-        crashHandler.setCrashListener(crashListener)
+        this.onCrashHandler = config.onCrash
+        crashHandler.onCrash = ::dispatchCrash
         application.registerActivityLifecycleCallbacks(crashHandler.lifecycleCallbacks)
-        restorePreviousRecoveryState(application, crashListener)
+        restorePreviousRecoveryState(application, config.onPreviousProcessExit)
         FireLooper.install()
         FireLooper.setUncaughtExceptionHandler(crashHandler)
         Thread.setDefaultUncaughtExceptionHandler(crashHandler)
     }
 
-    public fun evaluate(): CrashLevel = evaluate(retryCount, crashHandler.backStackCount)
+    internal fun dispatchCrash(throwable: Throwable) {
+        val scope = CrashScope(
+            throwable = throwable,
+            activity = crashHandler.activity,
+            level = evaluate(retryCount, crashHandler.backStackCount),
+            retryCount = retryCount,
+        )
+        scope.onCrashHandler()
+    }
 
-    internal fun evaluate(retryCount: Int, backStackCount: Int): CrashLevel {
+    internal fun evaluate(retryCount: Int, backStackCount: Int): RecoveryLevel {
         return when {
             retryCount <= 1 ->
                 //try to restart the failing activity
-                CrashLevel.LEVEL_ONE
+                RecoveryLevel.RESTART_ACTIVITY
             backStackCount >= 1 ->
                 //failure in restarting the activity try to go back
-                CrashLevel.LEVEL_TWO
+                RecoveryLevel.GO_BACK
             else ->
                 //no activates to go back to so just restart the app
-                CrashLevel.LEVEL_THREE
+                RecoveryLevel.RELAUNCH_APP
         }
     }
 
-    public fun evaluateAsync(onEvaluate: ((activity: Activity?, level: CrashLevel) -> Unit)?) {
-        onEvaluate?.invoke(crashHandler.activity, evaluate())
-    }
-
-    public fun recover(level: CrashLevel = evaluate(), onRecover: ((activity: Activity?) -> Unit)?) {
+    internal fun recover(level: RecoveryLevel, onRecovered: (activity: Activity?) -> Unit) {
         val activityPair = getActivityPair()
         val retryCountAtCrash = retryCount
         when (level) {
             //try to restart the failing activity
-            CrashLevel.LEVEL_ONE -> {
+            RecoveryLevel.RESTART_ACTIVITY -> {
                 restartActivity(activityPair)
             }
             //failure in restarting the activity try to go back
-            CrashLevel.LEVEL_TWO -> {
+            RecoveryLevel.GO_BACK -> {
                 retryCount = 0
                 goBack(activityPair)
             }
             //no activates to go back to so just restart the app
-            CrashLevel.LEVEL_THREE -> {
+            RecoveryLevel.RELAUNCH_APP -> {
                 retryCount = 0
                 restartApp(activityPair)
             }
@@ -81,55 +111,30 @@ public object FireCrasher {
         // launch must know how far recovery had already escalated.
         publishRecoveryState(
             level,
-            if (level == CrashLevel.LEVEL_ONE) retryCount else retryCountAtCrash,
+            if (level == RecoveryLevel.RESTART_ACTIVITY) retryCount else retryCountAtCrash,
         )
-        onRecover?.invoke(crashHandler.activity)
+        onRecovered(crashHandler.activity)
     }
 
-    /**
-     * Past terminations of this app recorded by the system, newest first.
-     * Includes causes the in-process handler can never see, such as native
-     * crashes, ANRs, and low-memory kills. Empty below API 30.
-     */
-    @JvmStatic
-    @JvmOverloads
-    public fun getHistoricalExitReasons(context: Context, maxCount: Int = 16): List<ApplicationExitInfo> {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return activityManager.getHistoricalProcessExitReasons(context.packageName, 0, maxCount)
-    }
-
-    /**
-     * The most recent recorded exit caused by a crash, native crash, or ANR,
-     * or null if none is recorded. The record may predate the previous launch;
-     * use [ApplicationExitInfo.getTimestamp] to judge freshness. Null below API 30.
-     */
-    @JvmStatic
-    public fun getLastAbnormalExit(context: Context): ApplicationExitInfo? {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return null
-        return getHistoricalExitReasons(context).firstOrNull {
-            it.reason == ApplicationExitInfo.REASON_CRASH ||
-                    it.reason == ApplicationExitInfo.REASON_CRASH_NATIVE ||
-                    it.reason == ApplicationExitInfo.REASON_ANR
-        }
-    }
-
-    internal fun restorePreviousRecoveryState(context: Context, crashListener: CrashListener) {
+    internal fun restorePreviousRecoveryState(
+        context: Context,
+        onPreviousProcessExit: (ApplicationExitInfo) -> Unit,
+    ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-        val lastExit = getLastAbnormalExit(context) ?: return
+        val lastExit = context.lastAbnormalExit() ?: return
         val state = RecoveryStateCodec.decode(lastExit.processStateSummary)
         if (state != null && System.currentTimeMillis() - lastExit.timestamp < RECOVERY_STATE_MAX_AGE_MS) {
             // The previous process died while a recovery was in flight. Resume
             // the escalation ladder instead of retrying the level that just
-            // failed: anything past LEVEL_ONE must not fall back to restarting
-            // the activity that killed the process.
-            retryCount = if (state.level == CrashLevel.LEVEL_ONE) state.retryCount
+            // failed: anything past RESTART_ACTIVITY must not fall back to
+            // restarting the activity that killed the process.
+            retryCount = if (state.level == RecoveryLevel.RESTART_ACTIVITY) state.retryCount
             else maxOf(state.retryCount, 2)
         }
-        crashListener.onPreviousProcessExit(lastExit)
+        onPreviousProcessExit(lastExit)
     }
 
-    private fun publishRecoveryState(level: CrashLevel, retryCount: Int) {
+    private fun publishRecoveryState(level: RecoveryLevel, retryCount: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
         val context = application ?: crashHandler.activity ?: return
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -206,5 +211,7 @@ public object FireCrasher {
     internal fun resetForTest() {
         retryCount = 0
         application = null
+        onCrashHandler = { recover() }
+        crashHandler.resetForTest()
     }
 }
