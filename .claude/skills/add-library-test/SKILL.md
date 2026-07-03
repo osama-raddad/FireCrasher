@@ -14,10 +14,11 @@ behavior change to the library should come with a test.
 
 | Concern | Test |
 |---------|------|
-| Recovery level selection (`evaluate`) | `CrashLevelEvaluationTest` (pure, no Robolectric) |
+| Recovery level selection (`evaluate`) | `RecoveryLevelEvaluationTest` (pure, no Robolectric) |
 | Activity counting / back-stack depth | `BackStackCountTest` |
-| Crash delivered to the listener on the main thread | `CrashHandlerTest` |
-| LEVEL_TWO back dispatch (dispatcher vs. legacy `onBackPressed`) | `GoBackDispatchTest` |
+| Crash delivered to the `onCrash` hook on the main thread | `CrashHandlerTest` |
+| Install DSL: scope population, auto-recover default, forced-level recover | `FireCrasherDslTest` |
+| GO_BACK back dispatch (dispatcher vs. legacy `onBackPressed`) | `GoBackDispatchTest` |
 | `ApplicationExitInfo` querying (API 30+) | `ExitInfoTest` (`@Config(sdk = [30, 36])`) |
 | Recovery-state encode/decode + 128-byte limit | `RecoveryStateCodecTest` |
 
@@ -28,7 +29,7 @@ Extend the matching suite when your change fits one; add a new
 
 - **Runner:** annotate device-dependent tests with
   `@RunWith(RobolectricTestRunner::class)`. Pure-logic tests (like
-  `CrashLevelEvaluationTest`) need no runner — prefer that when possible.
+  `RecoveryLevelEvaluationTest`) need no runner — prefer that when possible.
 - **Build activities** with `Robolectric.buildActivity(...)`; drive lifecycle
   through `CrashHandler`'s `lifecycleCallbacks` rather than reaching into
   internals.

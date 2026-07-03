@@ -20,16 +20,6 @@ import org.robolectric.shadows.ShadowActivityManager
 @Config(sdk = [30, 36])
 class ExitInfoTest {
 
-    private class RecordingListener : CrashListener() {
-        var exitInfo: ApplicationExitInfo? = null
-
-        override fun onCrash(throwable: Throwable) = Unit
-
-        override fun onPreviousProcessExit(exitInfo: ApplicationExitInfo) {
-            this.exitInfo = exitInfo
-        }
-    }
-
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     private fun addExitRecord(
@@ -54,14 +44,14 @@ class ExitInfoTest {
 
     @Test
     fun `no records means no exit reasons`() {
-        assertTrue(FireCrasher.getHistoricalExitReasons(context).isEmpty())
-        assertNull(FireCrasher.getLastAbnormalExit(context))
+        assertTrue(context.historicalExitReasons().isEmpty())
+        assertNull(context.lastAbnormalExit())
     }
 
     @Test
     fun `returns recorded exits`() {
         addExitRecord(ApplicationExitInfo.REASON_CRASH)
-        val exits = FireCrasher.getHistoricalExitReasons(context)
+        val exits = context.historicalExitReasons()
         assertEquals(1, exits.size)
         assertEquals(ApplicationExitInfo.REASON_CRASH, exits.first().reason)
     }
@@ -70,68 +60,68 @@ class ExitInfoTest {
     fun `normal exits are not abnormal`() {
         addExitRecord(ApplicationExitInfo.REASON_EXIT_SELF)
         addExitRecord(ApplicationExitInfo.REASON_USER_REQUESTED)
-        assertNull(FireCrasher.getLastAbnormalExit(context))
+        assertNull(context.lastAbnormalExit())
     }
 
     @Test
     fun `finds crashes native crashes and anrs`() {
         addExitRecord(ApplicationExitInfo.REASON_ANR)
-        assertEquals(ApplicationExitInfo.REASON_ANR, FireCrasher.getLastAbnormalExit(context)?.reason)
+        assertEquals(ApplicationExitInfo.REASON_ANR, context.lastAbnormalExit()?.reason)
     }
 
     @Test
     fun `recent recovery state is restored after process death`() {
-        val listener = RecordingListener()
+        var reported: ApplicationExitInfo? = null
         addExitRecord(
             reason = ApplicationExitInfo.REASON_CRASH,
-            summary = RecoveryStateCodec.encode(CrashLevel.LEVEL_THREE, 3),
+            summary = RecoveryStateCodec.encode(RecoveryLevel.RELAUNCH_APP, 3),
         )
 
-        FireCrasher.restorePreviousRecoveryState(context, listener)
+        FireCrasher.restorePreviousRecoveryState(context) { reported = it }
 
         assertEquals(3, FireCrasher.retryCount)
-        assertNotNull(listener.exitInfo)
+        assertNotNull(reported)
     }
 
     @Test
-    fun `restoring past level one escalates beyond activity restart`() {
+    fun `restoring past activity restart escalates beyond it`() {
         addExitRecord(
             reason = ApplicationExitInfo.REASON_CRASH,
-            summary = RecoveryStateCodec.encode(CrashLevel.LEVEL_TWO, 0),
+            summary = RecoveryStateCodec.encode(RecoveryLevel.GO_BACK, 0),
         )
 
-        FireCrasher.restorePreviousRecoveryState(context, RecordingListener())
+        FireCrasher.restorePreviousRecoveryState(context) {}
 
-        // A restored LEVEL_TWO+ recovery must not evaluate back to LEVEL_ONE.
+        // A restored GO_BACK+ recovery must not evaluate back to RESTART_ACTIVITY.
         assertTrue(FireCrasher.retryCount >= 2)
     }
 
     @Test
     fun `stale recovery state is reported but not restored`() {
-        val listener = RecordingListener()
+        var reported: ApplicationExitInfo? = null
         addExitRecord(
             reason = ApplicationExitInfo.REASON_CRASH,
             timestamp = System.currentTimeMillis() - 60_000L,
-            summary = RecoveryStateCodec.encode(CrashLevel.LEVEL_THREE, 3),
+            summary = RecoveryStateCodec.encode(RecoveryLevel.RELAUNCH_APP, 3),
         )
 
-        FireCrasher.restorePreviousRecoveryState(context, listener)
+        FireCrasher.restorePreviousRecoveryState(context) { reported = it }
 
         assertEquals(0, FireCrasher.retryCount)
-        assertNotNull(listener.exitInfo)
+        assertNotNull(reported)
     }
 
     @Test
     fun `foreign process state summaries are ignored`() {
-        val listener = RecordingListener()
+        var reported: ApplicationExitInfo? = null
         addExitRecord(
             reason = ApplicationExitInfo.REASON_CRASH,
             summary = byteArrayOf(9, 9, 9, 9, 9),
         )
 
-        FireCrasher.restorePreviousRecoveryState(context, listener)
+        FireCrasher.restorePreviousRecoveryState(context) { reported = it }
 
         assertEquals(0, FireCrasher.retryCount)
-        assertNotNull(listener.exitInfo)
+        assertNotNull(reported)
     }
 }

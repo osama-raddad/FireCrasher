@@ -1,41 +1,43 @@
-public final class com/osama/firecrasher/CrashHandler : java/lang/Thread$UncaughtExceptionHandler {
-	public fun getActivity ()Landroid/app/Activity;
-	public fun getBackStackCount ()I
-	public fun uncaughtException (Ljava/lang/Thread;Ljava/lang/Throwable;)V
+public final class com/osama/firecrasher/CrashScope {
+	public final fun getActivity ()Landroid/app/Activity;
+	public final fun getLevel ()Lcom/osama/firecrasher/RecoveryLevel;
+	public final fun getRetryCount ()I
+	public final fun getThrowable ()Ljava/lang/Throwable;
+	public final fun recover (Lcom/osama/firecrasher/RecoveryLevel;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun recover$default (Lcom/osama/firecrasher/CrashScope;Lcom/osama/firecrasher/RecoveryLevel;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
-public final class com/osama/firecrasher/CrashLevel : java/lang/Enum {
-	public static final field LEVEL_ONE Lcom/osama/firecrasher/CrashLevel;
-	public static final field LEVEL_THREE Lcom/osama/firecrasher/CrashLevel;
-	public static final field LEVEL_TWO Lcom/osama/firecrasher/CrashLevel;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lcom/osama/firecrasher/CrashLevel;
-	public static fun values ()[Lcom/osama/firecrasher/CrashLevel;
-}
-
-public abstract class com/osama/firecrasher/CrashListener {
-	public fun <init> ()V
-	protected final fun evaluate ()V
-	protected final fun evaluate (Lkotlin/jvm/functions/Function2;)V
-	public abstract fun onCrash (Ljava/lang/Throwable;)V
-	public fun onPreviousProcessExit (Landroid/app/ApplicationExitInfo;)V
-	protected final fun recover ()V
-	protected final fun recover (Lcom/osama/firecrasher/CrashLevel;)V
-	protected final fun recover (Lcom/osama/firecrasher/CrashLevel;Lkotlin/jvm/functions/Function1;)V
-	protected final fun recover (Lkotlin/jvm/functions/Function1;)V
+public final class com/osama/firecrasher/ExitInfoKt {
+	public static final fun historicalExitReasons (Landroid/content/Context;I)Ljava/util/List;
+	public static synthetic fun historicalExitReasons$default (Landroid/content/Context;IILjava/lang/Object;)Ljava/util/List;
+	public static final fun lastAbnormalExit (Landroid/content/Context;)Landroid/app/ApplicationExitInfo;
 }
 
 public final class com/osama/firecrasher/FireCrasher {
 	public static final field INSTANCE Lcom/osama/firecrasher/FireCrasher;
-	public final fun evaluate ()Lcom/osama/firecrasher/CrashLevel;
-	public final fun evaluateAsync (Lkotlin/jvm/functions/Function2;)V
-	public static final fun getHistoricalExitReasons (Landroid/content/Context;)Ljava/util/List;
-	public static final fun getHistoricalExitReasons (Landroid/content/Context;I)Ljava/util/List;
-	public static synthetic fun getHistoricalExitReasons$default (Landroid/content/Context;IILjava/lang/Object;)Ljava/util/List;
-	public static final fun getLastAbnormalExit (Landroid/content/Context;)Landroid/app/ApplicationExitInfo;
-	public final fun getRetryCount ()I
-	public final fun install (Landroid/app/Application;Lcom/osama/firecrasher/CrashListener;)V
-	public final fun recover (Lcom/osama/firecrasher/CrashLevel;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun recover$default (Lcom/osama/firecrasher/FireCrasher;Lcom/osama/firecrasher/CrashLevel;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun install (Landroid/app/Application;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun install$default (Lcom/osama/firecrasher/FireCrasher;Landroid/app/Application;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/osama/firecrasher/FireCrasherConfig {
+	public final fun onCrash (Lkotlin/jvm/functions/Function1;)V
+	public final fun onPreviousProcessExit (Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface annotation class com/osama/firecrasher/FireCrasherDsl : java/lang/annotation/Annotation {
+}
+
+public final class com/osama/firecrasher/FireCrasherKt {
+	public static final fun installFireCrasher (Landroid/app/Application;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun installFireCrasher$default (Landroid/app/Application;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/osama/firecrasher/RecoveryLevel : java/lang/Enum {
+	public static final field GO_BACK Lcom/osama/firecrasher/RecoveryLevel;
+	public static final field RELAUNCH_APP Lcom/osama/firecrasher/RecoveryLevel;
+	public static final field RESTART_ACTIVITY Lcom/osama/firecrasher/RecoveryLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/osama/firecrasher/RecoveryLevel;
+	public static fun values ()[Lcom/osama/firecrasher/RecoveryLevel;
 }
 

@@ -15,23 +15,25 @@ return empty/null below API 30, so no version guard is needed in your code.
 
 ## Option A: the callback (recommended)
 
-Override `onPreviousProcessExit`. FireCrasher calls it from `install()` when the
+Configure `onPreviousProcessExit`. FireCrasher calls it from install when the
 system has a record of the app dying abnormally last time:
 
 ```kotlin
-FireCrasher.install(this, object : CrashListener() {
-    override fun onCrash(throwable: Throwable) {
-        recover()
-    }
+installFireCrasher {
+    onCrash { recover() }
 
-    override fun onPreviousProcessExit(exitInfo: ApplicationExitInfo) {
-        // The record may predate the last launch — check freshness if it matters.
-        val recent = System.currentTimeMillis() - exitInfo.timestamp < 60_000
-        FirebaseCrashlytics.getInstance().log(
-            "previous exit: reason=${exitInfo.reason} desc=${exitInfo.description} recent=$recent"
-        )
+    onPreviousProcessExit { exitInfo ->
+        // Only invoked on API 30+; the guard is for lint, which can't see
+        // that guarantee through the lambda.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // The record may predate the last launch — check freshness if it matters.
+            val recent = System.currentTimeMillis() - exitInfo.timestamp < 60_000
+            FirebaseCrashlytics.getInstance().log(
+                "previous exit: reason=${exitInfo.reason} desc=${exitInfo.description} recent=$recent"
+            )
+        }
     }
-})
+}
 ```
 
 `exitInfo.reason` values worth branching on include `REASON_CRASH`,
@@ -39,20 +41,18 @@ FireCrasher.install(this, object : CrashListener() {
 
 ## Option B: query directly
 
-Ask FireCrasher for the records whenever you need them (Kotlin or Java):
+Ask for the records from any `Context` whenever you need them:
 
 ```kotlin
 // The most recent crash / native crash / ANR, or null.
-val lastCrash: ApplicationExitInfo? = FireCrasher.getLastAbnormalExit(this)
+val lastCrash: ApplicationExitInfo? = lastAbnormalExit()
 
 // Full history, newest first (default up to 16).
-val history: List<ApplicationExitInfo> = FireCrasher.getHistoricalExitReasons(this, maxCount = 16)
+val history: List<ApplicationExitInfo> = historicalExitReasons(maxCount = 16)
 ```
 
-```java
-ApplicationExitInfo lastCrash = FireCrasher.getLastAbnormalExit(context);
-List<ApplicationExitInfo> history = FireCrasher.getHistoricalExitReasons(context);
-```
+(From Java: `ExitInfoKt.lastAbnormalExit(context)` and
+`ExitInfoKt.historicalExitReasons(context, 16)`.)
 
 ## Notes
 

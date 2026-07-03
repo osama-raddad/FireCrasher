@@ -40,17 +40,17 @@ misbehaving.
 
 ## The recovery ladder
 
-Not every recovery is equal, so FireCrasher escalates. `CrashLevel` encodes
+Not every recovery is equal, so FireCrasher escalates. `RecoveryLevel` encodes
 three stages, chosen by `FireCrasher.evaluate(retryCount, backStackCount)`:
 
-1. **LEVEL_ONE — restart the activity.** The first one or two crashes are
+1. **RESTART_ACTIVITY.** The first one or two crashes are
    treated as occasional/behavioral. `recreate()` (then a relaunch-and-finish)
    gives the current screen a clean slate. Most transient crashes stop here.
-2. **LEVEL_TWO — go back.** If the same activity keeps crashing (`retryCount`
+2. **GO_BACK.** If the same activity keeps crashing (`retryCount`
    climbs past the threshold) and there is something behind it on the back
    stack, the crashing screen is considered dead and FireCrasher pops it,
    returning the user to a screen that *was* working.
-3. **LEVEL_THREE — restart the app.** If there is nothing to go back to, the
+3. **RELAUNCH_APP.** If there is nothing to go back to, the
    only safe state left is a fresh launch from the default activity.
 
 The ladder is the whole product thesis: cheap local recovery first, escalating
@@ -69,7 +69,7 @@ indefinitely.
 To break that loop, on API 30+ FireCrasher persists its recovery progress
 where the *next* process can read it: `ActivityManager.setProcessStateSummary`
 stores a small blob (≤128 bytes) alongside the process's
-`ApplicationExitInfo`. `RecoveryStateCodec` encodes the current `CrashLevel`
+`ApplicationExitInfo`. `RecoveryStateCodec` encodes the current `RecoveryLevel`
 and retry count into that blob (magic bytes + version + two bytes). On the next
 launch, `restorePreviousRecoveryState` reads it back — but only if the exit is
 recent (within `RECOVERY_STATE_MAX_AGE_MS`, 30 s), because an older record just
@@ -86,9 +86,9 @@ mechanism.
 
 Rather than pretend to catch what it can't, FireCrasher surfaces the system's
 own record of those deaths. On API 30+ it reads
-`ActivityManager.getHistoricalProcessExitReasons` and exposes them through
-`getHistoricalExitReasons`, `getLastAbnormalExit`, and the optional
-`CrashListener.onPreviousProcessExit` callback fired at install time. This lets
+`ActivityManager.getHistoricalProcessExitReasons` and exposes them through the
+`Context.historicalExitReasons()` / `Context.lastAbnormalExit()` extensions and
+the optional `onPreviousProcessExit { }` handler fired at install time. This lets
 a consuming app log native/ANR terminations to its crash reporter on the next
 launch — completing the crash picture without claiming to have recovered from
 what is genuinely unrecoverable in-process.
@@ -96,7 +96,7 @@ what is genuinely unrecoverable in-process.
 ## Key constraints and trade-offs
 
 - **minSdk 23.** Raised from 21 in 2.1.0 by the `androidx.activity` dependency,
-  which brought `OnBackPressedDispatcher` so LEVEL_TWO works under Android's
+  which brought `OnBackPressedDispatcher` so GO_BACK works under Android's
   predictive-back model (API 36 no longer calls `Activity.onBackPressed()`).
   Plain framework activities still use the legacy call, so both paths are kept.
 - **API-gated features degrade to no-ops.** Everything built on
@@ -125,14 +125,16 @@ version, `VERSION_NAME`, and ABI baseline in sync), then tag.
 
 ## Where the pieces live
 
-- `FireCrasher.kt` — the public façade and all policy (evaluate, recover,
-  state persistence, exit-info queries).
+- `FireCrasher.kt` — the public façade (`install` / `installFireCrasher`) and
+  all policy (evaluate, recover, state persistence).
+- `FireCrasherConfig.kt` / `CrashScope.kt` — the install DSL and the `onCrash`
+  handler's receiver.
 - `FireLooper.kt` — the exception-surviving main loop.
-- `CrashHandler.java` — bridges the JVM uncaught-exception hook and activity
+- `CrashHandler.kt` — bridges the JVM uncaught-exception hook and activity
   lifecycle into the current-activity / back-stack-depth signals `evaluate`
   needs.
-- `CrashListener.kt` / `CrashLevel.kt` / `RecoveryState.kt` — the consumer
-  callback, the escalation enum, and the cross-process state codec.
+- `RecoveryLevel.kt` / `RecoveryState.kt` / `ExitInfo.kt` — the escalation
+  enum, the cross-process state codec, and the exit-info `Context` extensions.
 
 See [`firecrasher/AGENTS.md`](firecrasher/AGENTS.md) for the full source map
 and the rules that govern changing each piece.

@@ -12,19 +12,11 @@ import org.robolectric.Shadows.shadowOf
 @RunWith(RobolectricTestRunner::class)
 class CrashHandlerTest {
 
-    private class RecordingListener : CrashListener() {
-        var received: Throwable? = null
-
-        override fun onCrash(throwable: Throwable) {
-            received = throwable
-        }
-    }
-
     @Test
-    fun `delivers the crash to the listener`() {
+    fun `delivers the crash to the handler`() {
         val handler = CrashHandler()
-        val listener = RecordingListener()
-        handler.setCrashListener(listener)
+        var received: Throwable? = null
+        handler.onCrash = { received = it }
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         handler.lifecycleCallbacks.onActivityResumed(activity)
         val boom = RuntimeException("boom")
@@ -32,24 +24,24 @@ class CrashHandlerTest {
         handler.uncaughtException(Thread.currentThread(), boom)
         shadowOf(Looper.getMainLooper()).idle()
 
-        assertSame(boom, listener.received)
+        assertSame(boom, received)
     }
 
     @Test
-    fun `crash before any activity still reaches the listener`() {
+    fun `crash before any activity still reaches the handler`() {
         val handler = CrashHandler()
-        val listener = RecordingListener()
-        handler.setCrashListener(listener)
+        var received: Throwable? = null
+        handler.onCrash = { received = it }
         val boom = RuntimeException("early boom")
 
         handler.uncaughtException(Thread.currentThread(), boom)
         shadowOf(Looper.getMainLooper()).idle()
 
-        assertSame(boom, listener.received)
+        assertSame(boom, received)
     }
 
     @Test
-    fun `crash without a listener does not throw`() {
+    fun `crash without a handler does not throw`() {
         CrashHandler().uncaughtException(Thread.currentThread(), RuntimeException("ignored"))
     }
 }
